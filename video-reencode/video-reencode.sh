@@ -58,7 +58,7 @@ select THREADS in "0" "1" "2" "4" "8" "16"; do
     break
 done
 
-FILES=$(find ./ -not -path '*/.*' -name "*.mp4" -o -name "*.MP4" -o -name "*.m4v" -o -name "*.M4V" -o -name "*.mkv" -o -name "*.MKV" -o -name "*.mpg" -o -name "*.MPG" -o -name "*.mpeg" -o -name "*.MPEG" -o -name "*.avi" -o -name "*.AVI" | sort -v)
+FILES=$(find ./ -not -path '*/.*' \( -name "*.mp4" -o -name "*.MP4" -o -name "*.m4v" -o -name "*.M4V" -o -name "*.mkv" -o -name "*.MKV" -o -name "*.mpg" -o -name "*.MPG" -o -name "*.mpeg" -o -name "*.MPEG" -o -name "*.avi" -o -name "*.AVI" \) | sort -V)
 
 # progress variables
 NUMFILES=`echo "$FILES" | wc -l`
