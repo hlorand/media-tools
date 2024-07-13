@@ -79,7 +79,7 @@ do
 
     NEWFILENAME="$file".compressed.mp4
 
-    ffmpeg -v error -stats -stats_period 1 -i "$file" -movflags +faststart -crf $CRF -preset $PRESET -s $RESOLUTION -r $FPS -threads $THREADS -vcodec libx264 -acodec aac -ar 44100 -ac $ACHANNELS -b:a $ABITRATE ./"$NEWFILENAME" && 
+    ffmpeg -v error -stats -stats_period 1 -i "$file" -movflags +faststart -crf $CRF -preset $PRESET -s $RESOLUTION -r $FPS -threads $THREADS -vcodec libx264 -acodec aac -ar 44100 -ac $ACHANNELS -b:a $ABITRATE ./"$NEWFILENAME" -y && 
     rm "$file"
 done
 )
