@@ -17,3 +17,10 @@ Usage:
 - Run the script with `./script.sh`
 
 ----
+
+| [mp3-merge.sh](mp3-merge/mp3-merge.sh) |  |
+|---|---|
+| Merge every .mp3 file in the current folder using ffmpeg into merged.mp3 |  |
+
+----
+
