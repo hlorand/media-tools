@@ -1,6 +1,12 @@
 #!/bin/bash
 
-# Merge every .mp3 file in the current folder using ffmpeg into merged.mp3
+echo "--------------"
+echo "MP3 MERGE"
+echo "--------------"
+echo "Merges every .mp3 file in the current folder"
+echo "(NOT including the files in subfolders)"
+echo "using ffmpeg into merged.mp3"
+echo
 
 # change working dir to current dir
 cd -- "$(dirname "$0")"
