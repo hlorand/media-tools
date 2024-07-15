@@ -1,6 +1,8 @@
 Media tools
 ===========
 
+Useful bash scripts for manipulating media files (videos, images).
+
 [video-reencode.sh](video-reencode/video-reencode.sh)
 --------------------
 
