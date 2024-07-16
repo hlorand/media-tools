@@ -41,11 +41,15 @@ Usage: Place the script in a folder where video files are located. `chmod +x scr
 
 Merges every .mp3 file in the current folder using ffmpeg into merged.mp3
 
+Usage: Place the script in a folder where mp3 files are located. chmod +x script.sh; ./script.sh
+
 ----
 
 [mp4-merge.sh](mp4-merge/mp4-merge.sh)
 ---------------------
 
-Finds every MP4 file in subfolders and merges them into a single .mp4 file. Filename: Parent-folder-name.mp4 
+Finds every MP4 file in current folder and subfolders and merges them into a single .mp4 file. Filename: Parent-folder-name.mp4 
 
 Creates chapters for the merged video. Certain media players can use this information. *For example: In VLC, go to Playback menu > Chapters > Jump to chapter.*
+
+Usage: Place the script in a folder where video files are located. chmod +x script.sh; ./script.sh
