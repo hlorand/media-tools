@@ -66,6 +66,14 @@ COUNTER=0
 
 for file in $FILES
 do
+    # Check if the file contains an apostrophe, if so then rename
+    if [[ "$file" == *"'"* ]]; then
+      new_filename=$(echo "$file" | tr -d "'")  # remove apostrophe
+
+      mv "$file" "$new_filename"
+      file=$new_filename
+    fi
+    
     # update progress
     ((COUNTER++))
     echo "-----------------"

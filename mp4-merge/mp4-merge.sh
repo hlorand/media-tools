@@ -30,6 +30,14 @@ timestamp=0 # timestamp for chapters
 # -V version sort, use -h to human sort
 for file in $(find . -not -path '*/.*' -name "*.mp4" -o -name "*.MP4" | sort -V)
 do
+    # Check if the file contains an apostrophe, if so then rename
+    if [[ "$file" == *"'"* ]]; then
+      new_filename=$(echo "$file" | tr -d "'")  # remove apostrophe
+
+      mv "$file" "$new_filename"
+      file=$new_filename
+    fi
+
     echo "file '$file'" >> files-to-merge.txt
     echo $file
 
