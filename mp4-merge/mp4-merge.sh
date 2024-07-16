@@ -20,7 +20,7 @@ fi
 cd -- "$(dirname "$0")"
 
 # clear possible previous run files
-rm files-to-merge.txt chapters.txt 
+rm files-to-merge.txt chapters.txt &>/dev/null
 
 (
 IFS=$'\n' # internal file separator for the for loop below 
