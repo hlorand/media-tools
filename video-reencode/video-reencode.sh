@@ -68,6 +68,8 @@ select THREADS in "0" "1" "2" "4" "8" "16"; do
     break
 done
 
+##########################################
+
 FILES=$(find ./ -not -path '*/.*' \( -name "*.mp4" -o -name "*.MP4" -o -name "*.m4v" -o -name "*.M4V" -o -name "*.mkv" -o -name "*.MKV" -o -name "*.mpg" -o -name "*.MPG" -o -name "*.mpeg" -o -name "*.MPEG" -o -name "*.avi" -o -name "*.AVI" -o -name "*.mov" -o -name "*.MOV" \) | sort -V)
 
 # progress variables
@@ -78,14 +80,6 @@ SIZEBEFORE=$(du -sh | cut -d$'\t' -f1)
 
 for file in $FILES
 do
-    # Check if the file contains an apostrophe, if so then rename
-    if [[ "$file" == *"'"* ]]; then
-      new_filename=$(echo "$file" | tr -d "'")  # remove apostrophe
-
-      mv "$file" "$new_filename"
-      file=$new_filename
-    fi
-    
     # update progress
     ((COUNTER++))
     echo "-----------------"
@@ -97,12 +91,34 @@ do
         continue
     fi
 
+    # Check if the file contains an apostrophe, if so then rename
+    if [[ "$file" == *"'"* ]]; then
+      new_filename=$(echo "$file" | tr -d "'")  # remove apostrophe
+
+      mv "$file" "$new_filename"
+      file=$new_filename
+    fi
+
+    # Detect orientation, swap widh and height if vertical video
+    DIMENSIONS=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$file")
+    width=$(echo "$DIMENSIONS" | cut -d'x' -f1)
+    height=$(echo "$DIMENSIONS" | cut -d'x' -f2)
+
+    if [ "$width" -lt "$height" ]; then
+        targetwidth=$(echo "$RESOLUTION" | cut -d'x' -f1)
+        targetheight=$(echo "$RESOLUTION" | cut -d'x' -f2)
+        DIMENSIONS=$targetheight"x"$targetwidth
+    else
+        DIMENSIONS=$RESOLUTION
+    fi
+
+
     NEWFILENAME="$file".compressed.mp4
 
     ffmpeg -v error -stats -stats_period 1 -i "$file" -movflags +faststart \
         -crf $CRF \
         -preset $PRESET \
-        -s $RESOLUTION \
+        -s $DIMENSIONS \
         -r $FPS \
         -threads $THREADS \
         -tune $TUNE \
