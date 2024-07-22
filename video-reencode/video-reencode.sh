@@ -1,10 +1,8 @@
 #!/bin/bash
 
-echo "--------------"
-echo "VIDEO REENCODE"
-echo "--------------"
+echo -e "--------------\nVIDEO REENCODE\n--------------"
 echo "Converts every video file in the current folder"
-echo "(including the files in subfolders) to .mp4"
+echo "(including the files in subfolders) to H264 .mp4"
 echo "with the specified settings. Deletes old files."
 echo "Adds '.compressed.mp4' to the end of filenames."
 echo
@@ -21,6 +19,7 @@ cd -- "$(dirname "$0")"
 (
 IFS=$'\n' # internal file separator for the for loop below 
 
+echo -e "--------------\nVIDEO SETTINGS\n--------------"
 echo "Choose a resolution:"
 select RESOLUTION in "426x240" "640x360" "854x480" "1280x720" "1920x1080" "2560x1440" "3840x2160"; do
     break
@@ -37,6 +36,15 @@ select FPS in "60" "30" "25" "24" "20" "15" "10" "5" "4" "2" "1"; do
     break
 done
 
+echo "Choose a video tune setting (film=everyday videos, stillimage=presentations"
+echo "grain=old grainy videos, fastdecode=fast playback on low-performance devices"
+echo "zerolatency=fast ENCODE for streaming)"
+select TUNE in "film" "animation" "stillimage" "grain" "fastdecode" "zerolatency"; do
+    break
+done
+
+echo -e "--------------\nAUDIO SETTINGS\n--------------"
+
 echo "Choose an audio bitrate:"
 select ABITRATE in "32k" "48k" "64k" "96k" "128k" "160k" "192k" "256k" "320k"; do
     break
@@ -46,6 +54,8 @@ echo "Number of audio channels:"
 select ACHANNELS in "1" "2"; do
     break
 done
+
+echo -e "--------------\nCONVERSION SETTINGS\n--------------"
 
 echo "Conversion speed (the faster the speed,"
 echo "the larger the file size) (recommended: veryfast):"
@@ -63,6 +73,8 @@ FILES=$(find ./ -not -path '*/.*' \( -name "*.mp4" -o -name "*.MP4" -o -name "*.
 # progress variables
 NUMFILES=`echo "$FILES" | wc -l`
 COUNTER=0
+
+SIZEBEFORE=$(du -sh | cut -d$'\t' -f1)
 
 for file in $FILES
 do
@@ -87,7 +99,20 @@ do
 
     NEWFILENAME="$file".compressed.mp4
 
-    ffmpeg -v error -stats -stats_period 1 -i "$file" -movflags +faststart -crf $CRF -preset $PRESET -s $RESOLUTION -r $FPS -threads $THREADS -vcodec libx264 -acodec aac -ar 44100 -ac $ACHANNELS -b:a $ABITRATE ./"$NEWFILENAME" -y && 
+    ffmpeg -v error -stats -stats_period 1 -i "$file" -movflags +faststart \
+        -crf $CRF \
+        -preset $PRESET \
+        -s $RESOLUTION \
+        -r $FPS \
+        -threads $THREADS \
+        -tune $TUNE \
+        -vcodec libx264 \
+        -acodec aac -ar 44100 -ac $ACHANNELS -b:a $ABITRATE \
+        ./"$NEWFILENAME" -y && 
     rm "$file"
 done
+
+echo -e "\nSize before: " $SIZEBEFORE
+echo "Size after: " $(du -sh | cut -d$'\t' -f1)
+echo "Press ENTER to exit"; read enter
 )
