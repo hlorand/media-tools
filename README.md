@@ -1,7 +1,15 @@
 Media tools
 ===========
 
-Useful bash scripts for manipulating media files (videos, images).
+Useful bash scripts for manipulating media files (videos, images) with `ffmpeg` or `yt-dlp`.
+
+Usage of most scripts:
+
+1. Place the script in a folder where media files (mp4, mp3...) are located. 
+2. `chmod +x script.sh;`
+3. `./script.sh`
+4. Some scripts accept arguments in the format: `./script.sh <arg1> <arg2>`
+
 
 [video-reencode.sh](video-reencode/video-reencode.sh)
 --------------------
@@ -32,7 +40,7 @@ Choose a FPS Frames Per Second value (recommended: 30):
 - It appends ".compressed.mp4" to the end of the filenames. 
 - Deletes old files.
 
-Usage: Place the script in a folder where video files are located. `chmod +x script.sh; ./script.sh`
+> Usage: Run the script in a folder that contains video files.
 
 ----
 
@@ -41,7 +49,7 @@ Usage: Place the script in a folder where video files are located. `chmod +x scr
 
 Merges every .mp3 file in the current folder using ffmpeg into merged.mp3
 
-Usage: Place the script in a folder where mp3 files are located. chmod +x script.sh; ./script.sh
+> Usage: Run the script in a folder that contains mp3 files.
 
 ----
 
@@ -52,4 +60,20 @@ Finds every MP4 file in current folder and subfolders and merges them into a sin
 
 Creates chapters for the merged video. Certain media players can use this information. *For example: In VLC, go to Playback menu > Chapters > Jump to chapter.*
 
-Usage: Place the script in a folder where video files are located. chmod +x script.sh; ./script.sh
+> Usage: Run the script in a folder that contains mp4 files.
+
+
+[youtube-archive.sh](youtube-archive/youtube-archive.sh)
+-------------------------
+
+Downloads a YouTube video with yt-dlp at a user-specified resolution. Prints downloaded filename.
+
+> Usage: `./script.sh "<Youtube URL>" <resolution 144/240/360/480/720/1080/1440/2160/4320>`
+
+
+[youtube-archive-cut.sh](youtube-archive/youtube-archive-cut.sh)
+-------------------------
+
+Downloads a YouTube video with yt-dlp at a user-specified resolution and filename. Optionally trims the video. Interactively asks the settings.
+
+> Usage: `./script.sh "<Youtube URL>"`
