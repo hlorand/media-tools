@@ -53,6 +53,15 @@ Merges every .mp3 file in the current folder using ffmpeg into merged.mp3
 
 ----
 
+[mp3-to-mp4.sh](mp3-to-mp4/mp3-to-mp4.sh)
+--------------------
+
+Converts mp3 file to mp4 video using the provided image file. Resolution = image resolution, FPS = 1.
+
+> Usage: `./script.sh <mp3 file> <image file>`
+
+----
+
 [mp4-merge.sh](mp4-merge/mp4-merge.sh)
 ---------------------
 
@@ -62,6 +71,7 @@ Creates chapters for the merged video. Certain media players can use this inform
 
 > Usage: Run the script in a folder that contains mp4 files.
 
+----
 
 [youtube-archive.sh](youtube-archive/youtube-archive.sh)
 -------------------------
@@ -70,6 +80,8 @@ Downloads a YouTube video with yt-dlp at a user-specified resolution. Prints dow
 
 > Usage: `./script.sh "<Youtube URL>" <resolution 144/240/360/480/720/1080/1440/2160/4320>`
 
+
+----
 
 [youtube-archive-cut.sh](youtube-archive/youtube-archive-cut.sh)
 -------------------------
