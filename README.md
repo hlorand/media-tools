@@ -1,7 +1,7 @@
 Media tools
 ===========
 
-Useful bash scripts for manipulating media files (videos, images) with `ffmpeg` or `yt-dlp`.
+Useful bash scripts for manipulating media files (videos, images) with `ffmpeg`, `exiftool` or `yt-dlp`.
 
 Usage of most scripts:
 
@@ -44,10 +44,28 @@ Choose a FPS Frames Per Second value (recommended: 30):
 
 ----
 
+[rename-media-to-exif-datetime.sh](rename-media-to-exif-datetime/rename-media-to-exif-datetime.sh)
+---------------------
+
+Renames all media files (jpg,jpeg,heic,cr2,png,jfif,mov,mp4,m4v,mod,mpo,mpg,mpeg,avi) in the current folder and subfolders to the EXIF date and time in this format: YYYY-MM-DD HH-MM-SS.EXT using `exiftool`
+
+```
+something.jpg ---> 2024-07-27 19-15-19.jpg
+videofile.MP4 ---> 2024-07-28 12-11-59.mp4
+```
+
+> Usage: Run the script in a folder that contains video files.
+
+----
+
 [mp3-merge.sh](mp3-merge/mp3-merge.sh)
 --------------------
 
 Merges every .mp3 file in the current folder using ffmpeg into merged.mp3
+
+```
+part1.mp3 part2.mp3 part3.mp3 ---> merged.mp3
+```
 
 > Usage: Run the script in a folder that contains mp3 files.
 
@@ -58,6 +76,10 @@ Merges every .mp3 file in the current folder using ffmpeg into merged.mp3
 
 Converts mp3 file to mp4 video using the provided image file. Resolution = image resolution, FPS = 1.
 
+```
+audio.mp3 image.jpg ---> video.mp4
+```
+
 > Usage: `./script.sh <mp3 file> <image file>`
 
 ----
@@ -65,9 +87,18 @@ Converts mp3 file to mp4 video using the provided image file. Resolution = image
 [mp4-merge.sh](mp4-merge/mp4-merge.sh)
 ---------------------
 
-Finds every MP4 file in current folder and subfolders and merges them into a single .mp4 file. Filename: Parent-folder-name.mp4 
+Finds every MP4 file in current folder and subfolders and merges them into a single .mp4 file. Filename: Parent-folder-name.mp4 File sorting: [Version sorting](https://www.gnu.org/software/coreutils/manual/html_node/Version-sort-overview.html)
 
 Creates chapters for the merged video. Certain media players can use this information. *For example: In VLC, go to Playback menu > Chapters > Jump to chapter.*
+
+```
+Something/
+   01_Introduction.mp4
+   02_Installing.mp4
+   03_First exercise.mp4
+   ...
+   ---> Something.mp4
+```
 
 > Usage: Run the script in a folder that contains mp4 files.
 
@@ -79,7 +110,6 @@ Creates chapters for the merged video. Certain media players can use this inform
 Downloads a YouTube video with yt-dlp at a user-specified resolution. Prints downloaded filename.
 
 > Usage: `./script.sh "<Youtube URL>" <resolution 144/240/360/480/720/1080/1440/2160/4320>`
-
 
 ----
 
