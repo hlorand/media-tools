@@ -104,7 +104,7 @@ do
     width=$(echo "$DIMENSIONS" | cut -d'x' -f1)
     height=$(echo "$DIMENSIONS" | cut -d'x' -f2)
 
-    if [ $RESOLUTION -ne "original" ]
+    if [[ $RESOLUTION != "original" ]]
     then
         # Detect orientation, swap widh and height if vertical video
         if [ "$width" -lt "$height" ]; then
