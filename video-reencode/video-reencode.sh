@@ -21,7 +21,7 @@ IFS=$'\n' # internal file separator for the for loop below
 
 echo -e "--------------\nVIDEO SETTINGS\n--------------"
 echo "Choose a resolution:"
-select RESOLUTION in "426x240" "640x360" "854x480" "1280x720" "1920x1080" "2560x1440" "3840x2160"; do
+select RESOLUTION in "original" "426x240" "640x360" "854x480" "1280x720" "1920x1080" "2560x1440" "3840x2160"; do
     break
 done
 
@@ -32,7 +32,7 @@ select CRF in "30" "28" "26" "24" "22" "20"; do
 done
 
 echo "Choose a FPS Frames Per Second value (recommended: 30):"
-select FPS in "60" "30" "25" "24" "20" "15" "10" "5" "4" "2" "1"; do
+select FPS in "60" "50" "30" "25" "24" "20" "15" "10" "5" "4" "2" "1"; do
     break
 done
 
@@ -99,17 +99,21 @@ do
       file=$new_filename
     fi
 
-    # Detect orientation, swap widh and height if vertical video
+    # Get resolution
     DIMENSIONS=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$file")
     width=$(echo "$DIMENSIONS" | cut -d'x' -f1)
     height=$(echo "$DIMENSIONS" | cut -d'x' -f2)
 
-    if [ "$width" -lt "$height" ]; then
-        targetwidth=$(echo "$RESOLUTION" | cut -d'x' -f1)
-        targetheight=$(echo "$RESOLUTION" | cut -d'x' -f2)
-        DIMENSIONS=$targetheight"x"$targetwidth
-    else
-        DIMENSIONS=$RESOLUTION
+    if [ $RESOLUTION -ne "original" ]
+    then
+        # Detect orientation, swap widh and height if vertical video
+        if [ "$width" -lt "$height" ]; then
+            targetwidth=$(echo "$RESOLUTION" | cut -d'x' -f1)
+            targetheight=$(echo "$RESOLUTION" | cut -d'x' -f2)
+            DIMENSIONS=$targetheight"x"$targetwidth
+        else
+            DIMENSIONS=$RESOLUTION
+        fi
     fi
 
 
