@@ -1,5 +1,10 @@
 #!/bin/bash
 
+echo -e "------------------\nYouTube Downloader\n------------------"
+echo "Downloads multiple YouTube videos."
+echo "URLs are provided in a text file, one per line."
+echo ""
+
 # Check if both parameters are provided
 if [ "$#" -ne 2 ]; then
     echo "Usage: $0 <path_to_list.txt> <resolution>"
