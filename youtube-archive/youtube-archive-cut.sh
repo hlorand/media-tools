@@ -5,6 +5,9 @@ echo "Downloads a YouTube video with yt-dlp at a user-specified"
 echo "resolution and filename. Optionally trims the video."
 echo ""
 
+# change working dir to current dir
+cd -- "$(dirname "$0")"
+
 # check if URL provided
 if [ -z "$1" ]; then
   echo "URL empty. Usage: $0 <Youtube.com URL with ?v= ending>"
@@ -37,7 +40,7 @@ read FILENAME
 FILENAME="$FILENAME.$VIDEOID.mp4"
 
 # download mp4 with audio
-yt-dlp -f "bestvideo[height<=$RESOLUTION][vcodec=h264][ext=mp4]+bestaudio[ext=m4a]/best[height<=$RESOLUTION]" -o "$FILENAME" "$URL"
+yt-dlp -f "bestvideo[height<=$RESOLUTION][ext=mp4]+bestaudio/best" -o "$FILENAME" --merge-output-format mp4 "$URL"
 
 echo "Downloaded: $FILENAME"
 

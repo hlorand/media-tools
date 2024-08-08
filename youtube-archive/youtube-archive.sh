@@ -4,6 +4,9 @@
 # Downloads a YouTube video with yt-dlp at a user-specified resolution.
 # Echoes downloaded filename
 
+# change working dir to current dir
+cd -- "$(dirname "$0")"
+
 # Check if the number of parameters is not equal to 2
 if [ "$#" -ne 2 ]; then
   echo "Usage: $0 <Youtube.com URL> <resolution 144/240/360/480/720/1080/1440/2160/4320>"
@@ -26,8 +29,8 @@ then
 fi
 
 # download and get filename
-echo "Downloading..." >&2
-yt-dlp -f "bestvideo[height<=$RES][ext=mp4]+bestaudio" -o "%(title)s.%(ext)s" "$URL" &>/dev/null
+echo "Downloading..."
+yt-dlp -f "bestvideo[height<=$RES][ext=mp4]+bestaudio" --merge-output-format mp4 -o "%(title)s.%(ext)s" "$URL" &>/dev/null
 
 FILENAME=$(yt-dlp -o '%(title)s.%(ext)s' --get-filename "$URL" 2>/dev/null)
 
