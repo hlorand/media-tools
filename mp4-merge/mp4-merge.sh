@@ -65,7 +65,14 @@ script_dir=$(dirname "$script_path")
 current_folder_name=$(basename "$script_dir")
 
 # merge
-ffmpeg -f concat -safe 0 -i files-to-merge.txt -c copy "$current_folder_name.mp4" &&
+ffmpeg -f concat -safe 0 -i files-to-merge.txt -c copy "$current_folder_name.mp4"
+
+if [ $? -ne 0 ]; then
+    echo "Merge with copy not possible, press ENTER to reencode video to h.264 video (crf 23, veryfast)"
+    read enter
+    rm "$current_folder_name.mp4"
+    ffmpeg -f concat -safe 0 -i files-to-merge.txt -c:v libx264 -crf 23 -preset veryfast "$current_folder_name.mp4"
+fi
 
 # add chapters (1. get current metadata to meta.txt | 2. merge with chapter file | 3. write metadata to new mp4)
 ffmpeg -i "$current_folder_name.mp4" -f ffmetadata meta.txt &&
