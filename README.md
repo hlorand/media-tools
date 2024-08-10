@@ -128,4 +128,13 @@ Downloads a YouTube video with yt-dlp at a user-specified resolution and filenam
 
 Downloads multiple YouTube videos. URLs are provided in a text file, one per line.
 
-> Usage: `./script.sh <list.txt> <resolution 144/240/360/480/720/1080/1440/2160/4320>`
+> Usage: `./script.sh <youtubeUrlList.txt> <resolution 144/240/360/480/720/1080/1440/2160/4320>`
+
+----
+
+[archive-org-url-list-checker.sh](archive-org-tools/archive-org-url-list-checker.sh)
+-------------------------
+
+Checks if the URLs found in the specified .txt file are archived on archive.org
+
+> Usage: `./script.sh <URLlist.txt>`
