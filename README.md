@@ -1,7 +1,7 @@
 Media tools
 ===========
 
-Useful bash scripts for manipulating media files (videos, images) with `ffmpeg`, `exiftool` or `yt-dlp`.
+Useful bash/python scripts for manipulating media files (videos, images) with `ffmpeg`, `exiftool` or `yt-dlp`.
 
 Usage of most scripts:
 
@@ -101,6 +101,15 @@ Something/
 ```
 
 > Usage: Run the script in a folder that contains mp4 files.
+
+----
+
+[filematcher.py](filematcher/filematcher.py)
+---------------------
+
+The script scans two specified folders to identify and match files that have identical contents, even if their names differ. It provides a report of unmatched files and any files that could not be accessed due to permission issues.
+
+> Usage: `python script.py <folder1> <folder2>`
 
 ----
 
