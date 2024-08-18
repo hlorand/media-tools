@@ -84,6 +84,19 @@ audio.mp3 image.jpg ---> video.mp4
 
 ----
 
+[keygenmusic-to-mp3.sh](keygenmusic-to-mp3/keygenmusic-to-mp3.sh)
+--------------------
+
+This bash script converts every "keygen music" (.mod .xm .it .s3m .mtm .stm music tracker files) in the current folder to mp3 using VLC Media player. It supports every media format that VLC supports. Edit VLC executable path below according to your operating system.
+
+```
+keygenmusic.mod ---> keygenmusic.mp3
+```
+
+> Usage: Run the script in a folder that contains music tracker files.
+
+----
+
 [mp4-merge.sh](mp4-merge/mp4-merge.sh)
 ---------------------
 
