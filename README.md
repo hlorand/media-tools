@@ -94,6 +94,15 @@ audio.mp3 image.jpg ---> video.mp4
 
 ----
 
+[convert-images-to-jpg](convert-images-to-jpg/convert-images-to-jpg.sh)
+-----------------------
+
+Convert exotic image formats to jpg.
+
+> Usage: Run the script in a folder that contains image files.
+
+----
+
 [keygenmusic-to-mp3.sh](keygenmusic-to-mp3/keygenmusic-to-mp3.sh)
 --------------------
 
