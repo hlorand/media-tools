@@ -56,6 +56,16 @@ videofile.MP4 ---> 2024-07-28 12-11-59.mp4
 
 > Usage: Run the script in a folder that contains video files.
 
+
+----
+
+[remove-exif.sh](remove-exif/remove-exif.sh)
+--------------------
+
+Removes EXIF metadata from files in the current directory including subdirectories.
+
+> Usage: Run the script in a folder that contains files.
+
 ----
 
 [mp3-merge.sh](mp3-merge/mp3-merge.sh)
