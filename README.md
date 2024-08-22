@@ -136,6 +136,15 @@ Something/
 
 ----
 
+[find-media-files](find-media-files/find-media-files.sh)
+----------------------
+
+Finds every media file based on file header bytes.
+
+> Usage: Run the script in a folder that contains media files.
+
+----
+
 [filematcher.py](filematcher/filematcher.py)
 ---------------------
 
