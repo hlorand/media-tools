@@ -29,7 +29,12 @@ cd -- "$(dirname "$0")"
 (
 IFS=$'\n' # internal file separator for the for loop below 
 
-for filename in $(find . -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.heic" -o -iname "*.cr2" -o -iname "*.png" -o -iname "*.jfif" -o -iname "*.mov" -o -iname "*.mp4" -o -iname "*.m4v" -o -iname "*.mod" -o -iname "*.mpo" -o -iname "*.mpg" -o -iname "*.mpeg" -o -iname "*.avi" \))
+for filename in $(find . -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.heic" \
+	                             -o -iname "*.cr2" -o -iname "*.png" -o -iname "*.jfif" \
+	                             -o -iname "*.mov" -o -iname "*.mp4" -o -iname "*.m4v" \
+	                             -o -iname "*.mod" -o -iname "*.mpo" -o -iname "*.mpg" \
+	                             -o -iname "*.mpeg" -o -iname "*.avi" -o -iname "*.webp" \
+	                             -o -iname "*.webm" \))
 do
 	# Requesting EXIF date with exiftool. s3: short, only value, m: skip minor problems.
 	datetime=$(exiftool -m -s3 -DateTimeOriginal "$filename")
@@ -49,10 +54,6 @@ do
 		datetime=$(exiftool -s3 -FileModifyDate "$filename")
 	fi
 
-	# Get extension and make it lowercase https://stackoverflow.com/a/965072/5380098
-	extension=${filename##*.}
-	extension=$(echo $extension | tr '[:upper:]' '[:lower:]')
-
 	# exiftool sometimes provides dates more precisely than seconds, deleting them from the end
 	# (e.g. 2022:11:29 13:14:15+1:00 or 2022:11:29 13:14:15-1:00)"
 	datetime=$(echo $datetime | cut -f1 -d"-" | cut -f1 -d"+")
@@ -60,8 +61,14 @@ do
 	# Transforming colon into hyphen
 	datetime=$(echo $datetime | tr ':' '-')
 
+	# Get extension and make it lowercase https://stackoverflow.com/a/965072/5380098
+	extension=${filename##*.}
+	extension=$(echo $extension | tr '[:upper:]' '[:lower:]')
+
+	directory=$(dirname $filename)
+
 	# New filename format
-	newfilename="$datetime$string.$extension"
+	newfilename="$directory/$datetime$string.$extension"
 
 	# Avoiding collisions: as long as there exists a file with the same name but different content,
 	# we add a counter to the file name until it's unique
@@ -81,5 +88,5 @@ do
 done
 )
 
-echo "DONE"
+echo "DONE, press ENTER to close"
 read enter
