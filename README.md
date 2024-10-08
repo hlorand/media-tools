@@ -11,6 +11,20 @@ Usage of most scripts:
 4. Some scripts accept arguments in the format: `./script.sh <arg1> <arg2>`
 
 
+[image-noise-remover](image-noise-remover/image-noise-remover.py)
+----------------------------
+
+This tool removes the noise from low-light images with image stacking. You need *multiple images*: you need an image sequence shot from a tripod, from the same position. The program merges the images, filtering out the noise.
+
+Usage: 
+
+```
+python3 image-noise-remover.py  input_folder_with_images/  output.jpg
+```
+
+![example](image-noise-remover/image-noise-remover.jpg)
+
+
 [video-reencode.sh](video-reencode/video-reencode.sh)
 --------------------
 
