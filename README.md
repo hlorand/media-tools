@@ -213,3 +213,21 @@ This tool helps you to easily generate FFmpeg commands to convert MP4 video file
 
 ![](ffmpeg-command-generator/ffmpeg-command-generator.png)
 
+
+[folder-accent-remover](folder-accent-remover/folder-accent-remover.exe)
+-------------------------------------
+
+This Windows program removes the accents from the charactes from folder names. Example:
+
+```
+c:\dir\Árvíztűrő
+c:\dir\tükörfúrógép
+
+ |         |
+ V becomes V
+
+c:\dir\Arvizturo
+c:\dir\tukorfurogep
+```
+
+![](folder-accent-remover/folder-accent-remover.png)
