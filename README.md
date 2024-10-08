@@ -188,3 +188,14 @@ Downloads multiple YouTube videos. URLs are provided in a text file, one per lin
 Checks if the URLs found in the specified .txt file are archived on archive.org
 
 > Usage: `./script.sh <URLlist.txt>`
+
+
+[ffmpeg-command-generator](https://hlorand.github.io/media-tools/ffmpeg-command-generator/)
+-------------------------
+
+This tool helps you to easily generate FFmpeg commands to convert MP4 video files. Just select the settings by filling out a form, and copy the generated command. 
+
+> Visit: https://hlorand.github.io/media-tools/ffmpeg-command-generator/
+
+![](ffmpeg-command-generator/ffmpeg-command-generator.png)
+

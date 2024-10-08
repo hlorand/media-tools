@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>FFMPEG MP4 Command Generator</title>
+
+	<meta charset="utf-8">
+	<base target="_blank">
+
+	<style type="text/css">
+		body{
+			color: #333;
+			
+			background: rgb(242,249,254);
+			background: -moz-linear-gradient(left,  rgba(242,249,254,1) 0%, rgba(214,240,253,1) 100%);
+			background: -webkit-linear-gradient(left,  rgba(242,249,254,1) 0%,rgba(214,240,253,1) 100%);
+			background: linear-gradient(to right,  rgba(242,249,254,1) 0%,rgba(214,240,253,1) 100%);
+			filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f2f9fe', endColorstr='#d6f0fd',GradientType=1 );
+			overflow-x: hidden;
+		}
+		input, textarea{
+			font-size: medium;
+		}
+
+		legend{
+			background-color: #444;
+			color: #eee;
+			padding: 5px;
+		}
+
+		fieldset{
+			background-color: #fff;
+			margin: 10px 0;
+		}
+		@media only screen and (min-width: 800px) {
+			fieldset{
+				display: inline;
+				width: 45%;
+			}
+			form fieldset:nth-of-type(odd) { float: left; clear: both; }
+			form fieldset:nth-of-type(even) { float: right;   }
+		}
+		code{
+			padding: 5px;
+			background-color: #eee;
+		}
+
+		@media only screen and (min-width: 1024px) {
+			body{
+				width: 80%;
+				max-width: 1600px;
+				margin: 0 auto;
+			}
+			h1, h1>p{
+				text-align: center;
+			}
+		}
+
+		h2, h1{
+			clear: both;
+			padding: 5px;
+			box-shadow: 2px 2px gray;
+
+			background: rgb(255,173,215);
+			background: -moz-linear-gradient(left,  rgba(255,173,215,1) 0%, rgba(150,246,255,1) 100%);
+			background: -webkit-linear-gradient(left,  rgba(255,173,215,1) 0%,rgba(150,246,255,1) 100%);
+			background: linear-gradient(to right,  rgba(255,173,215,1) 0%,rgba(150,246,255,1) 100%);
+			filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffadd7', endColorstr='#96f6ff',GradientType=1 );
+		}
+		@media only screen and (max-width: 1360px) {
+			#crfrange tr td:nth-of-type(odd){
+				display: none;
+			}
+		}
+	</style>
+
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+
+<h1>FFMPEG MP4 Command Generator</h1>
+
+<p>Fill the form and you can find the generated ffmpeg command below.</p>
+
+<form id="ffmpeg">
+
+	<fieldset id="inputfile">
+		<legend>Input file</legend>
+		<input type="text" id="filename" value="<input_filename>" onClick="this.select();"/>
+	</fieldset>
+
+	<fieldset id="outputfile">
+		<legend>Output file</legend>
+		<input type="text" id="outfilename" value="<output_filename>" onClick="this.select();"/>
+	</fieldset>
+
+	<h2>Video Settings</h2>
+
+	<fieldset id="trim_fields">
+		<legend><input type="checkbox" id="trim">Trim</legend>
+		<p>Cut video using start and end time.</p>
+		<p>Start (hh:mm:ss)
+			<input type="text" id="s_h" maxlength="2" size="2" value="00"> : 
+			<input type="text" id="s_m" maxlength="2" size="2"  value="00"> : 
+			<input type="text" id="s_s" maxlength="2" size="2"  value="00"> 
+		</p>
+		<p>End&nbsp; (hh:mm:ss)
+			<input type="text" id="e_h" maxlength="2" size="2"  value="00"> : 
+			<input type="text" id="e_m" maxlength="2" size="2"  value="00"> : 
+			<input type="text" id="e_s" maxlength="2" size="2"  value="00"> 
+		</p>
+	</fieldset>
+
+	<fieldset>
+		<legend><input type="checkbox" id="copy_video">Copy video stream</legend>
+		<p>Copies video stream from the file. If you check this box, all of the video encoding settings below will be disabled.</p>
+	</fieldset>
+
+	<fieldset>
+		<legend>Threads</legend>
+
+		<p>Limit the CPU threads during conversion.</p>
+
+		<input type="radio" name="threads" value="" class="default" checked><code>no limit</code></br>
+		<input type="radio" name="threads" value="1"><code>1</code></br>
+		<input type="radio" name="threads" value="2"><code>2</code></br>
+		<input type="radio" name="threads" value="3"><code>3</code></br>
+		<input type="radio" name="threads" value="4"><code>4</code></br>
+		<input type="radio" name="threads" value="6"><code>6</code></br>
+		<input type="radio" name="threads" value="8"><code>8</code></br>
+		<input type="radio" name="threads" value="custom">custom: <input type="text" id="threads"></br>
+	</fieldset>
+
+	<fieldset class="copy_video">
+		<legend>CRF</legend>
+
+		<p>Constant Rate Factor keeps the best quality of the video file using as much bits per frame as needed - rather than fixed bits per frame. This method allows the encoder to attempt to achieve a certain output quality for the whole file when output file size is of less importance. This provides maximum compression efficiency with a single pass. Lower values means better quality.</p>
+		
+		<ul>
+			<li>CRF 0 = lossless</li>
+			<li>CRF 18 = visually lossless, above this value you start to see compression artifacts</li>
+			<li>CRF 23 = recommended</li>
+		</ul>
+		
+	
+		<p>The range is exponential, so increasing the CRF value +6 results in roughly half the file size</p>
+			
+			<table id="crfrange" style="width: 100%; text-align: right; font-size: xx-small;" cellpadding="0">
+				<tr>
+				<script type="text/javascript">
+					for (var i = 0; i <=51; i++) {
+						document.write("<td style='width:1.923%;'>" + i + "</td>");
+					}
+				</script>
+				</tr>
+			</table>
+			
+			<input type="range" min="0" max="51" value="23" style="width: 99%; margin-left: 0.5%;" oninput="javascript:document.getElementById('crf').value=this.value;">
+			
+			<p>Selected CRF: <input type="text" id="crf" value="23"></p>
+	</fieldset>
+
+
+	<fieldset class="copy_video">
+		<legend>Resolution</legend>
+
+		<p>Set the width and height of the video.</p>
+
+		<input type="radio" name="resolution" value="" class="default" checked><code>original</code></br>
+		<input type="radio" name="resolution" value="176x144"><code>144p</code></br>
+		<input type="radio" name="resolution" value="426x240"><code>240p</code></br>
+		<input type="radio" name="resolution" value="640x360"><code>360p</code></br>
+		<input type="radio" name="resolution" value="854x480"><code>480p</code></br>
+		<input type="radio" name="resolution" value="1280x720"><code>720p (HD)</code></br>
+		<input type="radio" name="resolution" value="1920x1080"><code>1080p (FullHD)</code></br>
+		<input type="radio" name="resolution" value="2560x1440"><code>1440p</code></br>
+		<input type="radio" name="resolution" value="3840x2160"><code>2160p (2K)</code></br>
+		<input type="radio" name="resolution" value="custom">custom: <input type="text" id="resolution"></br>
+	</fieldset>
+
+	<fieldset class="copy_video">
+		<legend>Frame rate</legend>
+
+		<p>FPS = frame per second</p>
+
+		<input type="radio" name="fps" value="" class="default" checked><code>original</code></br>
+		<input type="radio" name="fps" value="1"><code>1 fps</code></br>
+		<input type="radio" name="fps" value="5"><code>5 fps</code></br>
+		<input type="radio" name="fps" value="10"><code>10 fps</code></br>
+		<input type="radio" name="fps" value="20"><code>20 fps</code></br>
+		<input type="radio" name="fps" value="24000/1001"><code>23.976 fps (movies)</code></br>
+		<input type="radio" name="fps" value="24"><code>24 fps</code></br>
+		<input type="radio" name="fps" value="25"><code>25 fps</code></br>
+		<input type="radio" name="fps" value="30000/1001"><code>29.97 fps (NTSC)</code></br>
+		<input type="radio" name="fps" value="30"><code>30 fps</code></br>
+		<input type="radio" name="fps" value="custom">custom: <input type="text" id="fps"></br>
+	</fieldset>
+
+	<fieldset class="copy_video">
+		<legend>Video codec</legend>
+
+		<p>H264 and H265 are a block-oriented motion-compensation-based video compression standards. H264 is widely used H265 is the successor of H264.</p>
+
+		<input type="radio" name="vcodec" value="libx264" class="default" checked><code>H.264</code></br>
+		<input type="radio" name="vcodec" value="libx265"><code>H.265</code> - To achieve same visual quality of H264 AND half the file size use CRF 28.</br>
+	</fieldset>
+
+	<fieldset class="copy_video">
+		<legend>Preset</legend>
+
+		<p>A preset is a collection of options that will provide a certain encoding speed to compression ratio. The faster the encoding speed the worse the compression is.</p>
+
+		<input type="radio" name="preset" value="ultrafast"><code>ultrafast</code></br>
+		<input type="radio" name="preset" value="superfast"><code>superfast</code></br>
+		<input type="radio" name="preset" value="veryfast"><code>veryfast</code></br>
+		<input type="radio" name="preset" value="faster"><code>faster</code></br>
+		<input type="radio" name="preset" value="fast"><code>fast</code></br>
+		<input type="radio" name="preset" value="medium" class="default" checked><code>medium (default)</code></br>
+		<input type="radio" name="preset" value="slow"><code>slow</code></br>
+		<input type="radio" name="preset" value="slower"><code>slower</code></br>
+		<input type="radio" name="preset" value="veryslow"><code>veryslow</code></br>
+		<input type="radio" name="preset" value="placebo"><code>placebo</code></br>
+	</fieldset>
+
+	<fieldset class="copy_video">
+		<legend>Tune</legend>
+
+		<p>Tune changes settings based upon the specifics of your input, like deblocking and keyframe count</p>
+
+		<input type="radio" name="tune" value="" class="default" checked><code>none</code></br>
+		<input type="radio" name="tune" value="film"><code>film</code> - use for high quality movie content; lowers deblocking</br>
+		<input type="radio" name="tune" value="animation"><code>animation</code> - good for cartoons; uses higher deblocking and more reference frames</br>
+		<input type="radio" name="tune" value="grain"><code>grain</code> - preserves the grain structure in old, grainy film material</br>
+		<input type="radio" name="tune" value="stillimage"><code>stillimage</code> - good for slideshow-like content</br>
+		<input type="radio" name="tune" value="fastdecode"><code>fastdecode</code> - allows faster decoding by disabling certain filters</br>
+		<input type="radio" name="tune" value="zerolatency"><code>zerolatency</code> - good for fast encoding and low-latency streaming</br>
+	</fieldset>
+
+	<fieldset class="copy_video">
+		<legend>Web video</legend>
+
+		<p>If your videos are going to be viewed in a browser this will move some information to the beginning of your file and allow the video to begin playing before it is completely downloaded by the viewer.</p>
+		
+		<input type="checkbox" id="webvideo"> Web video
+	</fieldset>
+
+	<fieldset style="display: none;">
+		
+	</fieldset>
+
+	<h2>Audio Settings</h2>
+
+	<fieldset>
+		<legend><input type="checkbox" id="disable_audio">Disable audio stream</legend>
+		
+		<p>Disablesaudio stream from the file.</p>
+	</fieldset>
+
+	<fieldset>
+		<legend><input type="checkbox" class="disable_audio" id="copy_audio">Copy audio stream</legend>
+		
+		<p>Copies audio stream from the file. If you check this box, all of the audio encoding settings below will be disabled.</p>
+	</fieldset>
+
+	<fieldset class="copy_audio disable_audio">
+		<legend>Audio codec</legend>
+		
+		<p>Used compression method</p>
+		
+		<input type="radio" name="audiocodec" value="aac" class="default" checked><code>aac</code></br>
+		<input type="radio" name="audiocodec" id="audiocodec_mp3" value="libmp3lame"><code>mp3</code></br>
+	</fieldset>
+
+	<fieldset class="copy_audio disable_audio">
+		<legend>Audio sample rate</legend>
+		
+		<p>Samples per second</p>
+
+		<input type="radio" name="audiosamplerate" value="8000"><code>8 kHz</code></br>
+		<input type="radio" name="audiosamplerate" value="16000"><code>16 kHz</code></br>
+		<input type="radio" name="audiosamplerate" value="22050"><code>22.05 kHz</code></br>
+		<input type="radio" name="audiosamplerate" value="32000"><code>32 kHz</code></br>
+		<input type="radio" name="audiosamplerate" value="44100" class="default" checked><code>44.1 kHz</code></br>
+		<input type="radio" name="audiosamplerate" value="48000"><code>48 kHz</code></br>
+	</fieldset>
+
+	<fieldset class="copy_audio disable_audio">
+		<legend>Audio bitrate</legend>
+
+		<p>Bits per second</p>
+
+		<input type="radio" name="audiobitrate" value="16k"><code>16k</code></br>
+		<input type="radio" name="audiobitrate" value="32k"><code>32k</code></br>
+		<input type="radio" name="audiobitrate" value="48k"><code>48k</code></br>
+		<input type="radio" name="audiobitrate" value="64k"><code>64k</code></br>
+		<input type="radio" name="audiobitrate" value="128k" class="default" checked><code>128k</code></br>
+		<input type="radio" name="audiobitrate" value="160k"><code>160k</code></br>
+		<input type="radio" name="audiobitrate" value="192k"><code>192k</code></br>
+		<input type="radio" name="audiobitrate" value="224k"><code>224k</code></br>
+		<input type="radio" name="audiobitrate" value="256k"><code>256k</code></br>
+		<input type="radio" name="audiobitrate" value="320k"><code>320k</code></br>
+		<span class="audiocodec_mp3_disable">
+			<input type="radio" name="audiobitrate" value="384k"><code>384k</code></br>
+			<input type="radio" name="audiobitrate" value="448k"><code>448k</code></br>
+			<input type="radio" name="audiobitrate" value="500k"><code>500k</code></br>
+		</span>
+	</fieldset>
+
+
+	<fieldset style="background-color: #E196FF; margin-bottom: 100px; width: 100%;">
+		<legend>FFMPEG Command</legend>
+
+		<textarea id="command" style="width: 100%; height: 100px;" onClick="this.select();"></textarea>
+		<p style="color: white;"> Made with ♥ by <a href="https://hlorand.hu">hlorand</a></p>
+	</fieldset>
+
+</form>
+
+
+<script type="text/javascript">
+
+function generatecommand(){
+
+	/********
+	Input file 
+	*********/
+
+	var command = "ffmpeg";
+
+	command += " -i " + $('#filename').val().split('\\').pop();
+
+	/********
+	Trim 
+	*********/
+	if ( $('#trim').prop('checked') ) {
+		
+		$('#trim_fields, #trim_fields input').css('color','initial');
+
+		if( !$('#s_h').val() ){ $('#s_h').val("00"); }
+		if( !$('#s_m').val() ){ $('#s_m').val("00"); }
+		if( !$('#s_s').val() ){ $('#s_s').val("00"); }
+		if( !$('#e_h').val() ){ $('#e_h').val("00"); }
+		if( !$('#e_m').val() ){ $('#e_m').val("00"); }
+		if( !$('#e_s').val() ){ $('#e_s').val("00"); }
+
+		command += " -ss " + $('#s_h').val() + ":" + $('#s_m').val() + ":" + $('#s_s').val();
+		command += " -to " + $('#e_h').val() + ":" + $('#e_m').val() + ":" + $('#e_s').val();
+	} else {
+		$('#trim_fields, #trim_fields input').css('color','lightgrey');
+	}
+
+	/********
+	Copy video
+	*********/
+	
+	var copy_video;
+
+	if ($('#copy_video').prop('checked')) {
+		$('.copy_video, .copy_video input').css('color','lightgrey');
+		$('.copy_video input').prop("disabled", true);
+		$('.copy_video input').prop('checked', false);
+		copy_video = true;
+	} else {
+		$('.copy_video, .copy_video input').css('color','initial');
+		$('.copy_video input').removeAttr("disabled");
+		copy_video = false;
+	}
+
+	// reenabling video settings resets checkboxes to default state
+	$('#copy_video').click(function(){
+		$('.copy_video input.default').prop('checked', true);
+	});
+	
+	if( copy_video ){
+		command += " -c:v copy ";
+	}
+
+	/********
+	Copy audio
+	*********/
+
+	var disable_audio;
+	
+	if ( $('#disable_audio').prop('checked') ) {
+		$('.disable_audio, .disable_audio input, .disable_audio span').css('color','lightgrey');
+		$('.disable_audio input').prop("disabled", true);
+		$('.disable_audio input').prop('checked', false);
+		disable_audio = true;
+	} else {
+		$('.disable_audio, .disable_audio input, .disable_audio span').css('color','initial');
+		$('.disable_audio input').removeAttr("disabled");
+		disable_audio = false;
+	}
+
+	// reenabling video settings resets checkboxes to default state
+	$('#disable_audio').click(function(){
+		$('.disable_audio input.default').prop('checked', true);
+	});
+	
+	if( disable_audio ){
+		command += " -an ";
+	}
+
+	/********
+	Copy audio
+	*********/
+
+	var copy_audio;
+	
+	if ( $('#copy_audio').prop('checked') ) {
+		$('.copy_audio, .copy_audio input, .copy_audio span').css('color','lightgrey');
+		$('.copy_audio input').prop("disabled", true);
+		$('.copy_audio input').prop('checked', false);
+		copy_audio = true;
+	} else {
+		if( !disable_audio ){
+			$('.copy_audio, .copy_audio input').css('color','initial');
+			$('.copy_audio input').removeAttr("disabled");
+		}
+		copy_audio = false;
+	}
+
+	// reenabling video settings resets checkboxes to default state
+	$('#copy_audio').click(function(){
+		$('.copy_audio input.default').prop('checked', true);
+	});
+	
+	if( copy_audio ){
+		command += " -c:a copy ";
+	}
+
+	/*************************
+	VIDEO SETTINGS
+	*************************/
+
+	/********
+	Threads
+	*********/
+
+	var threads = $('input[name=threads]:checked').val();
+
+	if( threads == "custom"){
+		command += " -s " + $('#threads').val();
+	} else if ( threads != ""){
+		$('#threads').val(threads);
+		command += " -threads " + threads;
+	}
+
+	if( !copy_video ){
+
+		/********
+		CRF 
+		*********/
+
+		command += " -crf " + $('#crf').val();
+
+		/********
+		Preset
+		*********/
+
+		command += " -preset " + $('input[name=preset]:checked').val();
+
+		/********
+		Resolution
+		*********/
+
+		var resolution = $('input[name=resolution]:checked').val();
+
+		if( resolution == "custom"){
+			command += " -s " + $('#resolution').val();
+		} else if ( resolution != ""){
+			$('#resolution').val(resolution);
+			command += " -s " + resolution;
+		}
+
+		/********
+		Video codec
+		*********/
+
+		command += " -vcodec " + $('input[name=vcodec]:checked').val();
+
+		/********
+		FPS
+		*********/
+
+		var fps = $('input[name=fps]:checked').val();
+
+		if( fps == "custom"){
+			command += " -r " + $('#fps').val();
+		} else if ( fps != ""){
+			$('#fps').val(fps);
+			command += " -r " + fps;
+		}
+
+		/********
+		Tune
+		*********/
+
+		var tune = $('input[name=tune]:checked').val();
+
+		if( tune != ""){
+			command += " -tune " + tune;
+		}
+
+		/********
+		Web video
+		*********/
+
+		if ( $('#webvideo').prop('checked') ) {
+			command += " -movflags +faststart ";
+		}
+	}
+
+	/*************************
+	AUDIO SETTINGS
+	*************************/
+
+	if( !copy_audio && !disable_audio){
+
+		/********
+		Audio codec
+		*********/
+
+		command += " -acodec " + $('input[name=audiocodec]:checked').val();
+
+		/********
+		Audio sample rate 
+		*********/
+		
+		command += " -ar " + $('input[name=audiosamplerate]:checked').val();
+
+		/********
+		Audio bitrate
+		*********/
+
+		command += " -b:a " + $('input[name=audiobitrate]:checked').val();
+
+		if ( $('#audiocodec_mp3').prop('checked') ) {
+			$('.audiocodec_mp3_disable').css('color','lightgrey');
+			$('.audiocodec_mp3_disable input').prop("disabled", true);
+			$('.audiocodec_mp3_disable input').prop('checked', false);
+		} else {
+			$('.audiocodec_mp3_disable').css('color','initial');
+			$('.audiocodec_mp3_disable input').removeAttr("disabled");
+		}
+	}
+
+	/********
+	Output file 
+	*********/
+	
+	command += " " + $('#outfilename').val().split('\\').pop();
+
+	$('#command').text(command);
+}
+
+$(document).ready(function(){
+	generatecommand();
+
+	$('#ffmpeg').change(function(){
+		generatecommand();
+	});
+});
+</script>
+
+</body>
+</html>
