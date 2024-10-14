@@ -20,12 +20,18 @@ cd -- "$(dirname "$0")"
 IFS=$'\n' # internal file separator for the for loop below 
 
 echo -e "--------------\nVIDEO SETTINGS\n--------------"
+
+echo "Choose a video codec:"
+select CODEC in "libx264" "libx265"; do
+    break
+done
+
 echo "Choose a resolution:"
 select RESOLUTION in "original" "426x240" "640x360" "854x480" "1280x720" "1920x1080" "2560x1440" "3840x2160"; do
     break
 done
 
-echo "Choose a Compression Rate Factor CRF (recommended: 26)"
+echo "Choose a Compression Rate Factor CRF (recommended: 23 for h264 = 28 for h265 )"
 echo "(bigger number = more compression, smaller number = quality):"
 select CRF in "30" "28" "26" "24" "22" "20"; do
     break
@@ -38,22 +44,35 @@ done
 
 echo "Choose a video tune setting (film=everyday videos, stillimage=presentations"
 echo "grain=old grainy videos, fastdecode=fast playback on low-performance devices"
-echo "zerolatency=fast ENCODE for streaming)"
-select TUNE in "film" "animation" "stillimage" "grain" "fastdecode" "zerolatency"; do
+echo "zerolatency=fast ENCODE for streaming, psnr/ssim=maximize these quality scores)"
+CODEC_TUNES=("none" "film" "animation" "stillimage" "grain" "fastdecode" "zerolatency")
+if [[ $CODEC == "libx265" ]]
+then
+    CODEC_TUNES=("none" "animation" "grain" "fastdecode" "zerolatency" "psnr" "ssim")
+fi
+
+select TUNE in "${CODEC_TUNES[@]}"; do
     break
 done
+if [[ $TUNE == "none" ]]
+then
+    TUNE=""
+fi
 
 echo -e "--------------\nAUDIO SETTINGS\n--------------"
 
-echo "Choose an audio bitrate:"
-select ABITRATE in "32k" "48k" "64k" "96k" "128k" "160k" "192k" "256k" "320k"; do
+echo "Number of audio channels:"
+select ACHANNELS in "2" "1" "0"; do
     break
 done
 
-echo "Number of audio channels:"
-select ACHANNELS in "1" "2"; do
-    break
-done
+if [ $ACHANNELS -ne 0 ]
+then
+    echo "Choose an audio bitrate:"
+    select ABITRATE in "32k" "48k" "64k" "96k" "128k" "160k" "192k" "256k" "320k"; do
+        break
+    done
+fi
 
 echo -e "--------------\nCONVERSION SETTINGS\n--------------"
 
@@ -119,16 +138,24 @@ do
 
     NEWFILENAME="$file".compressed.mp4
 
+    # set audio options based by channel count
+    AUDIO_OPTIONS=()
+    if [[ "$ACHANNELS" == "0" ]]; then
+        AUDIO_OPTIONS+=("-an")
+    else
+        AUDIO_OPTIONS+=("-acodec" "aac" "-ar" "44100" "-ac" "$ACHANNELS" "-b:a" "$ABITRATE")
+    fi
+
     ffmpeg -v error -stats -stats_period 1 -i "$file" -movflags +faststart \
-        -crf $CRF \
-        -preset $PRESET \
-        -s $DIMENSIONS \
-        -r $FPS \
-        -threads $THREADS \
-        -tune $TUNE \
-        -vcodec libx264 \
-        -acodec aac -ar 44100 -ac $ACHANNELS -b:a $ABITRATE \
-        ./"$NEWFILENAME" -y && 
+            -crf "$CRF" \
+            -preset "$PRESET" \
+            -s "$DIMENSIONS" \
+            -r "$FPS" \
+            -threads "$THREADS" \
+            ${TUNE:+"-tune"} ${TUNE:+"$TUNE"} \
+            -vcodec $CODEC \
+            "${AUDIO_OPTIONS[@]}" \
+            ./"$NEWFILENAME" -y &&
     rm "$file"
 done
 
