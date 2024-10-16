@@ -33,7 +33,7 @@ done
 
 echo "Choose a Compression Rate Factor CRF (recommended: 23 for h264 = 28 for h265 )"
 echo "(bigger number = more compression, smaller number = quality):"
-select CRF in "30" "28" "26" "24" "22" "20"; do
+select CRF in "40" "38" "36" "34" "32" "30" "28" "26" "24" "22" "20" "18"; do
     break
 done
 
@@ -76,8 +76,9 @@ fi
 
 echo -e "--------------\nCONVERSION SETTINGS\n--------------"
 
-echo "Conversion speed (the faster the speed,"
-echo "the larger the file size) (recommended: veryfast):"
+echo "Conversion speed (the faster the speed, the larger the file size)"
+echo "(optimal choice: h264:medium, h265:fast)"
+echo "(smallest filesize: h264:veryfast, h265:superfast)"
 select PRESET in "ultrafast" "superfast" "veryfast" "faster" "fast" "medium" "slow" "slower" "veryslow"; do
     break
 done
