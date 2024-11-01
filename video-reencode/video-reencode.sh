@@ -22,7 +22,7 @@ IFS=$'\n' # internal file separator for the for loop below
 echo -e "--------------\nVIDEO SETTINGS\n--------------"
 
 echo "Choose a video codec:"
-select CODEC in "libx264" "libx265"; do
+select CODEC in "libx264" "libx265" "libaom-av1"; do
     break
 done
 
@@ -38,7 +38,7 @@ select CRF in "40" "38" "36" "34" "32" "30" "28" "26" "24" "22" "20" "18"; do
 done
 
 echo "Choose a FPS Frames Per Second value (recommended: 30):"
-select FPS in "60" "50" "30" "25" "24" "20" "15" "10" "5" "4" "2" "1"; do
+select FPS in "60" "50" "30" "25" "24" "20" "15" "10" "6" "5" "4" "3" "2" "1"; do
     break
 done
 
@@ -62,7 +62,7 @@ fi
 echo -e "--------------\nAUDIO SETTINGS\n--------------"
 
 echo "Number of audio channels:"
-select ACHANNELS in "2" "1" "0"; do
+select ACHANNELS in "1" "2" "0"; do
     break
 done
 
@@ -138,6 +138,10 @@ do
 
 
     NEWFILENAME="$file".compressed.mp4
+    if [[ $CODEC == "libaom-av1" ]]
+    then
+        NEWFILENAME="$file".compressed.mkv
+    fi
 
     # set audio options based by channel count
     AUDIO_OPTIONS=()
