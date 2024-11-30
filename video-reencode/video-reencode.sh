@@ -2,7 +2,7 @@
 
 echo -e "--------------\nVIDEO REENCODE\n--------------"
 echo "Converts every video file in the current folder"
-echo "(including the files in subfolders) to H264 .mp4"
+echo "(including the files in subfolders) to .mp4"
 echo "with the specified settings. Deletes old files."
 echo "Adds '.compressed.mp4' to the end of filenames."
 echo
@@ -38,7 +38,7 @@ select CRF in "40" "38" "36" "34" "32" "30" "28" "26" "24" "22" "20" "18"; do
 done
 
 echo "Choose a FPS Frames Per Second value (recommended: 30):"
-select FPS in "60" "50" "30" "25" "24" "20" "15" "10" "6" "5" "4" "3" "2" "1"; do
+select FPS in "original" "60" "50" "30" "25" "24" "20" "15" "10" "6" "5" "4" "3" "2" "1"; do
     break
 done
 
@@ -85,6 +85,12 @@ done
 
 echo "Number of CPU threads (FIRST OPTION 1): 0=auto ):"
 select THREADS in "0" "1" "2" "4" "8" "16"; do
+    break
+done
+
+
+echo "Do you want to delete original files after conversion?"
+select DELETE in "yes" "no"; do
     break
 done
 
@@ -136,14 +142,21 @@ do
         fi
     fi
 
+    # to keep original fps, we just omit -r argument, else we use it
+    FPS_OPTIONS=()
+    if [[ $FPS != "original" ]]
+    then
+        FPS_OPTIONS+=("-r" "$FPS")
+    fi
 
+    # AV1 codec requires .mkv container
     NEWFILENAME="$file".compressed.mp4
     if [[ $CODEC == "libaom-av1" ]]
     then
         NEWFILENAME="$file".compressed.mkv
     fi
 
-    # set audio options based by channel count
+    # set audio options based on channel count
     AUDIO_OPTIONS=()
     if [[ "$ACHANNELS" == "0" ]]; then
         AUDIO_OPTIONS+=("-an")
@@ -155,13 +168,13 @@ do
             -crf "$CRF" \
             -preset "$PRESET" \
             -s "$DIMENSIONS" \
-            -r "$FPS" \
+            "${FPS_OPTIONS[@]}" \
             -threads "$THREADS" \
             ${TUNE:+"-tune"} ${TUNE:+"$TUNE"} \
             -vcodec $CODEC \
             "${AUDIO_OPTIONS[@]}" \
             ./"$NEWFILENAME" -y &&
-    rm "$file"
+    [ "$DELETE" = "yes" ] && rm "$file"
 done
 
 echo -e "\nSize before: " $SIZEBEFORE
