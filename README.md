@@ -204,6 +204,15 @@ Checks if the URLs found in the specified .txt file are archived on archive.org
 > Usage: `./script.sh <URLlist.txt>`
 
 
+[compress-pdf](compress-pdf/compress-pdf.sh)
+-------------------------
+
+This tool compresses a PDF file using Ghostscript, targeting a quality suitable for eBooks, and outputs the compressed file with a `.compressed.pdf` suffix.
+
+
+> Usage: `./script.sh <document.pdf>`
+
+
 [ffmpeg-command-generator](https://hlorand.github.io/media-tools/ffmpeg-command-generator/)
 -------------------------
 
