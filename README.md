@@ -52,9 +52,36 @@ Choose a FPS Frames Per Second value (recommended: 30):
 
 - It preserves the folder structure. 
 - It appends ".compressed.mp4" to the end of the filenames. 
-- Deletes old files.
+- Optionally deletes old files.
 
 > Usage: Run the script in a folder that contains video files.
+
+----
+
+[audio-reencode.sh](audio-reencode/audio-reencode.sh)
+--------------------
+
+Converts every audio file in the current folder (including the files in subfolders) to the selected audio format using ffmpeg.
+
+It sets the configurations through a series of questions. It's almost like an ffmpeg GUI, but in the command line.
+
+
+```text
+Choose an audio codec (mp3, ogg, aac, opus):
+1) libmp3lame
+2) libvorbis
+3) libfdk_aac
+4) libopus
+#? 1
+
+Choose a bitrate:
+1) 8k    3) 16k    5) 32k    7) 64k  9) 128k  11) 256k
+2) 12k   4) 24k    6) 48k    8) 96k 10) 192k  12) 320k
+#? 
+...
+```
+
+> Usage: Run the script in a folder that contains audio files.
 
 ----
 
