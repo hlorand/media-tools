@@ -240,6 +240,14 @@ This tool compresses a PDF file using Ghostscript, targeting a quality suitable 
 > Usage: `./script.sh <document.pdf>`
 
 
+[compress-video-target-filesize](compress-video-target-filesize/compress-video-target-filesize.sh)
+-------------------------
+
+Converts video, and targets a specific file size.
+
+
+> Usage: `./script.sh <video file> <target size in kilobytes> <audio bitrate in kbits/sec>`
+
 [ffmpeg-command-generator](https://hlorand.github.io/media-tools/ffmpeg-command-generator/)
 -------------------------
 
