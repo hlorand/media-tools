@@ -34,7 +34,7 @@ for filename in $(find . -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname 
 	                             -o -iname "*.mov" -o -iname "*.mp4" -o -iname "*.m4v" \
 	                             -o -iname "*.mod" -o -iname "*.mpo" -o -iname "*.mpg" \
 	                             -o -iname "*.mpeg" -o -iname "*.avi" -o -iname "*.webp" \
-	                             -o -iname "*.webm" \))
+	                             -o -iname "*.webm" -o -iname "*.gif" \))
 do
 	# Requesting EXIF date with exiftool. s3: short, only value, m: skip minor problems.
 	datetime=$(exiftool -m -s3 -DateTimeOriginal "$filename")
