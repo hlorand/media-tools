@@ -31,6 +31,12 @@ select RESOLUTION in "original" "426x240" "640x360" "854x480" "1280x720" "1920x1
     break
 done
 
+echo "Do you want to scale the video? (1 = no)"
+echo "If you scale, original resolution used."
+select SCALE in "1" "0.75" "0.5" "0.25" "0.2" "0.1"; do
+    break
+done
+
 echo "Choose a Compression Rate Factor CRF (recommended: 23 for h264 = 28 for h265 )"
 echo "(bigger number = more compression, smaller number = quality):"
 select CRF in "40" "38" "36" "34" "32" "30" "28" "26" "24" "22" "20" "18"; do
@@ -140,8 +146,10 @@ do
         else
             DIMENSIONS=$RESOLUTION
         fi
+    else
+        DIMENSIONS=$width"x"$height
     fi
-
+    
     # to keep original fps, we just omit -r argument, else we use it
     FPS_OPTIONS=()
     if [[ $FPS != "original" ]]
@@ -164,10 +172,18 @@ do
         AUDIO_OPTIONS+=("-acodec" "aac" "-ar" "44100" "-ac" "$ACHANNELS" "-b:a" "$ABITRATE")
     fi
 
+    # scale or exact resolution
+    SIZE_OPTIONS=()
+    if [[ "$SCALE" != "1" ]]; then
+        SIZE_OPTIONS+=("-vf" "scale=trunc(iw*$SCALE/2)*2:trunc(ih*$SCALE/2)*2") # ensure number is divisible by 2
+    else
+        SIZE_OPTIONS+=("-s" "$DIMENSIONS")
+    fi
+
     ffmpeg -v error -stats -stats_period 1 -i "$file" -movflags +faststart \
             -crf "$CRF" \
             -preset "$PRESET" \
-            -s "$DIMENSIONS" \
+            "${SIZE_OPTIONS[@]}" \
             "${FPS_OPTIONS[@]}" \
             -threads "$THREADS" \
             ${TUNE:+"-tune"} ${TUNE:+"$TUNE"} \
