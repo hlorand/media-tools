@@ -66,15 +66,51 @@ for f in files1 + files2:
         dic[key] = []
     dic[key].append(f)
 
-print("------\nFiles without pair:")
 
-for key in dic:
+print("------\nFiles with pair: filematcher-withpair.txt")
+
+with open("filematcher-withpair.txt", "w") as f:
+    for key in dic:
+        if len(dic[key]) == 2:
+            print( ";".join( dic[key] ), file=f)
+
+print("------\nFiles with different CRC but matching filename pair in the other folder on the same relative path: filematcher-withpair-differentcrc.txt")
+
+pairs = []
+exclude = set()
+for key in dic.copy():
     if len(dic[key]) == 1:
-        print(dic[key])
+        # check other folder for same filename
+        filepath = dic[key][0]
+        if folder1 in filepath:
+            filepath = filepath.replace(folder1, folder2)
+        else:
+            filepath = filepath.replace(folder2, folder1)
+            
+        if os.path.exists(filepath):
+            othercrc = crc32(filepath)
+            pair = sorted([ dic[key][0], dic[othercrc][0] ])
+            if pair not in pairs:
+                pairs.append( pair )
+            exclude.add(key)
+            exclude.add(othercrc)
 
-print("------\nFiles with permission errors:")
+with open("filematcher-withpair-differentcrc.txt", "w") as f:
+    for pair in pairs:
+        print( pair[0], pair[1], sep=";", file=f)
 
-for f in permerrors:
-    print(f)
+print("------\nFiles without pair: filematcher-withoutpair.txt")
+
+with open("filematcher-withoutpair.txt", "w") as f:
+    for key in dic:
+        if len(dic[key]) == 1 and key not in exclude:
+            print(dic[key][0], file=f)
+
+print("------\nFiles with permission errors: filematcher-permerrors.txt")
+
+with open("filematcher-permerrors.txt", "w") as f:
+    for perm in permerrors:
+        print(perm, file=f)
 
 input("Press ENTER to exit")
+
