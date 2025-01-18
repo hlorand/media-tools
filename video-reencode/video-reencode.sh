@@ -213,7 +213,15 @@ do
         VIDEO_FILTERS=("-vf" "$VIDEO_FILTERS_STR")
     fi
 
-    ffmpeg -v error -stats -stats_period 1 -i "$file" -movflags +faststart \
+    # function to display command before execution
+    echo_cmd() {
+        echo "-----------"
+        echo "$@"
+        echo "-----------"
+        "$@"
+    }
+
+    echo_cmd ffmpeg -v error -stats -stats_period 1 -i "$file" -movflags +faststart \
             -crf "$CRF" \
             -preset "$PRESET" \
             "${VIDEO_FILTERS[@]}" \
