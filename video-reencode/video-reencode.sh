@@ -37,6 +37,19 @@ select SCALE in "1" "0.75" "0.5" "0.25" "0.2" "0.1"; do
     break
 done
 
+echo "Do you want to rotate the video?"
+echo "If you scale, original resolution used."
+select ROTATE in "no" "+90" "-90" "180"; do
+    break
+done
+
+echo "Do you want to flip the video?"
+echo "If you scale, original resolution used."
+select FLIP in "no" "horizontal" "vertical"; do
+    break
+done
+
+
 echo "Choose a Compression Rate Factor CRF (recommended: 23 for h264 = 28 for h265 )"
 echo "(bigger number = more compression, smaller number = quality):"
 select CRF in "40" "38" "36" "34" "32" "30" "28" "26" "24" "22" "20" "18"; do
@@ -172,18 +185,38 @@ do
         AUDIO_OPTIONS+=("-acodec" "aac" "-ar" "44100" "-ac" "$ACHANNELS" "-b:a" "$ABITRATE")
     fi
 
-    # scale or exact resolution
-    SIZE_OPTIONS=()
+    # optional scale filter
+    VIDEO_FILTERS=()
     if [[ "$SCALE" != "1" ]]; then
-        SIZE_OPTIONS+=("-vf" "scale=trunc(iw*$SCALE/2)*2:trunc(ih*$SCALE/2)*2") # ensure number is divisible by 2
-    else
-        SIZE_OPTIONS+=("-s" "$DIMENSIONS")
+        VIDEO_FILTERS+=("scale=trunc(iw*$SCALE/2)*2:trunc(ih*$SCALE/2)*2") # ensure number is divisible by 2
+    fi
+
+    # optional rotation filter
+    if [[ "$ROTATE" == "+90" ]]; then
+        VIDEO_FILTERS+=("transpose=1")
+    elif [[ "$ROTATE" == "-90" ]]; then
+        VIDEO_FILTERS+=("transpose=2")
+    elif [[ "$ROTATE" == "180" ]]; then
+        VIDEO_FILTERS+=("transpose=1" "transpose=1")
+    fi
+
+    # optional flip filter
+    if [[ "$FLIP" == "horizontal" ]]; then
+        VIDEO_FILTERS+=("hflip")
+    elif [[ "$FLIP" == "vertical" ]]; then
+        VIDEO_FILTERS+=("vflip")
+    fi
+
+    # Join VIDEO_FILTERS into a comma-separated string and add -vf
+    if [[ ${#VIDEO_FILTERS[@]} -gt 0 ]]; then
+        VIDEO_FILTERS_STR=$(IFS=,; echo "${VIDEO_FILTERS[*]}")
+        VIDEO_FILTERS=("-vf" "$VIDEO_FILTERS_STR")
     fi
 
     ffmpeg -v error -stats -stats_period 1 -i "$file" -movflags +faststart \
             -crf "$CRF" \
             -preset "$PRESET" \
-            "${SIZE_OPTIONS[@]}" \
+            "${VIDEO_FILTERS[@]}" \
             "${FPS_OPTIONS[@]}" \
             -threads "$THREADS" \
             ${TUNE:+"-tune"} ${TUNE:+"$TUNE"} \
