@@ -234,7 +234,7 @@ Checks if the URLs found in the specified .txt file are archived on archive.org
 [compress-pdf](compress-pdf/compress-pdf.sh)
 -------------------------
 
-This tool compresses a PDF file using Ghostscript, targeting a quality suitable for eBooks, and outputs the compressed file with a `.compressed.pdf` suffix.
+Compresses PDF using ImageMagick. Makes the PDF smaller in resolution and uses less colors.
 
 
 > Usage: `./script.sh <document.pdf>`
