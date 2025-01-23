@@ -98,6 +98,17 @@ videofile.MP4 ---> 2024-07-28 12-11-59.mp4
 > Usage: Run the script in a folder that contains video files.
 
 
+[rename-mp3-to-id3-tag.sh](rename-mp3-to-id3-tag/rename-mp3-to-id3-tag.sh)
+---------------------
+
+Renames every mp3 in the current folder to this format: `Artist - Year - Album - Title.mp3` if ID3 tag present in metadata, using ffprobe (part of ffmpeg).
+
+```
+something.mp3 ---> Simplification and Translate - 2015 - Our little secret EP - Back to life.mp3
+```
+
+> Usage: Run the script in a folder that contains mp3 files.
+
 ----
 
 [remove-exif.sh](remove-exif/remove-exif.sh)
