@@ -23,16 +23,22 @@ if len(sys.argv) != 3:
 folder1 = sys.argv[1]
 folder2 = sys.argv[2]
 
+# collect permission errors
+permerrors = []
+
 # function to calculate file crc32
 def crc32(fileName):
-    with open(fileName, 'rb') as fh:
-        hash = 0
-        while True:
-            s = fh.read(65536)
-            if not s:
-                break
-            hash = zlib.crc32(s, hash)
-        return "%08X" % (hash & 0xFFFFFFFF)
+    try:
+        with open(fileName, 'rb') as fh:
+            hash = 0
+            while True:
+                s = fh.read(65536)
+                if not s:
+                    break
+                hash = zlib.crc32(s, hash)
+            return "%08X" % (hash & 0xFFFFFFFF)
+    except:
+        permerrors.append(fileName)
 
 
 # list all files in folder1 and 2
@@ -42,9 +48,6 @@ length = len(files1 + files2)
 
 # dictionary to collect identical files, the keys are crc32 hashes
 dic = {}
-
-# collect permission errors
-permerrors = []
 
 cnt = 1
 for f in files1 + files2:
@@ -69,9 +72,9 @@ for f in files1 + files2:
 
 print("------\nFiles with pair: filematcher-withpair.txt")
 
-with open("filematcher-withpair.txt", "w") as f:
+with open("filematcher-withpair.txt", "w", encoding='utf-8') as f:
     for key in dic:
-        if len(dic[key]) == 2:
+        if len(dic[key]) >= 2:
             print( ";".join( dic[key] ), file=f)
 
 print("------\nFiles with different CRC but matching filename pair in the other folder on the same relative path: filematcher-withpair-differentcrc.txt")
@@ -95,20 +98,20 @@ for key in dic.copy():
             exclude.add(key)
             exclude.add(othercrc)
 
-with open("filematcher-withpair-differentcrc.txt", "w") as f:
-    for pair in pairs:
-        print( pair[0], pair[1], sep=";", file=f)
+with open("filematcher-withpair-differentcrc.txt", "w", encoding='utf-8') as f:
+    for a,b in pairs:
+        print( a, b, os.path.getsize(a), os.path.getsize(b), os.path.getmtime(a), os.path.getmtime(b), sep=";", file=f)
 
 print("------\nFiles without pair: filematcher-withoutpair.txt")
 
-with open("filematcher-withoutpair.txt", "w") as f:
+with open("filematcher-withoutpair.txt", "w", encoding='utf-8') as f:
     for key in dic:
         if len(dic[key]) == 1 and key not in exclude:
             print(dic[key][0], file=f)
 
 print("------\nFiles with permission errors: filematcher-permerrors.txt")
 
-with open("filematcher-permerrors.txt", "w") as f:
+with open("filematcher-permerrors.txt", "w", encoding='utf-8') as f:
     for perm in permerrors:
         print(perm, file=f)
 
