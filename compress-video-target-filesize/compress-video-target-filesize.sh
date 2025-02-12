@@ -46,14 +46,20 @@ select SCALE in "1" "0.75" "0.5" "0.25" "0.2" "0.1"; do
     break
 done
 
+echo "Enter Start timestamp in HH:MM:SS format:"
+read START
+
+echo "Enter End timestamp in HH:MM:SS format:"
+read END
+
 OUTPUT="$INPUT-compressed.$EXTENSION"
 
 #-minrate ${VIDEO_BITRATE_KBITPS}k
 # pass 1
-ffmpeg -i "$INPUT" -c:v $CODEC -vf "scale=iw*$SCALE:ih*$SCALE" -b:v ${VIDEO_BITRATE_KBITPS}k -maxrate ${VIDEO_BITRATE_KBITPS}k -bufsize $((VIDEO_BITRATE_KBITPS / 2))k -deadline best -cpu-used 1 -b:a ${AUDIO_BITRATE_KBITPS}k -pass 1 -f $EXTENSION /dev/null -y
+ffmpeg -i "$INPUT" -ss $START -to $END -c:v $CODEC -vf "scale=iw*$SCALE:ih*$SCALE" -b:v ${VIDEO_BITRATE_KBITPS}k -maxrate ${VIDEO_BITRATE_KBITPS}k -bufsize $((VIDEO_BITRATE_KBITPS / 2))k -deadline best -cpu-used 1 -b:a ${AUDIO_BITRATE_KBITPS}k -pass 1 -f $EXTENSION /dev/null -y
 
 # pass 2
-ffmpeg -i "$INPUT" -c:v $CODEC -vf "scale=iw*$SCALE:ih*$SCALE" -b:v ${VIDEO_BITRATE_KBITPS}k -maxrate ${VIDEO_BITRATE_KBITPS}k -bufsize $((VIDEO_BITRATE_KBITPS / 2))k -deadline best -cpu-used 1 -b:a ${AUDIO_BITRATE_KBITPS}k -pass 2 "$OUTPUT" -y
+ffmpeg -i "$INPUT" -ss $START -to $END -c:v $CODEC -vf "scale=iw*$SCALE:ih*$SCALE" -b:v ${VIDEO_BITRATE_KBITPS}k -maxrate ${VIDEO_BITRATE_KBITPS}k -bufsize $((VIDEO_BITRATE_KBITPS / 2))k -deadline best -cpu-used 1 -b:a ${AUDIO_BITRATE_KBITPS}k -pass 2 "$OUTPUT" -y
 
 # remove log
 rm -f ffmpeg2pass-*.log
