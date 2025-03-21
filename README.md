@@ -155,6 +155,16 @@ Convert exotic image formats to jpg.
 
 ----
 
+[video-speed-change](video-speed-change/video-speed-change.sh)
+-----------------------
+
+Changes the video speed by a specified percentage.
+
+> Usage: `./script.sh <video_file> <speed_percentage>`
+
+
+----
+
 [keygenmusic-to-mp3.sh](keygenmusic-to-mp3/keygenmusic-to-mp3.sh)
 --------------------
 
