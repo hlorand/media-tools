@@ -18,4 +18,4 @@ fi
 MP3=$1
 IMAGE=$2
 
-ffmpeg -loop 1 -i "$IMAGE" -i "$MP3" -r 1 -c:a copy -c:v libx264 -shortest "$MP3.mp4" -y
+ffmpeg -loop 1 -i "$IMAGE" -i "$MP3" -r 1 -preset ultrafast -c:a copy -c:v libx264 -shortest "$MP3.mp4" -y
