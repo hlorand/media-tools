@@ -171,10 +171,10 @@ do
     fi
 
     # AV1 codec requires .mkv container
-    NEWFILENAME="$file".compressed.mp4
+    NEWFILENAME="$file".crf$CRF.$CODEC.compressed.mp4
     if [[ $CODEC == "libaom-av1" ]]
     then
-        NEWFILENAME="$file".compressed.mkv
+        NEWFILENAME="$file".crf$CRF.$CODEC.compressed.mkv
     fi
 
     # set audio options based on channel count
