@@ -131,7 +131,7 @@ do
     echo $NUMFILES "/" $COUNTER " " $((COUNTER * 100 / NUMFILES)) "% - " $file
 
     # skip if already compressed
-    if echo "$file" | grep -q "\.compressed\.mp4"; then
+    if echo "$file" | grep -q "\.compressed\.m"; then
         echo "SKIP"
         continue
     fi
@@ -144,23 +144,26 @@ do
       file=$new_filename
     fi
 
-    # Get resolution
+    # Get current dimensions
     DIMENSIONS=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$file")
     width=$(echo "$DIMENSIONS" | cut -d'x' -f1)
     height=$(echo "$DIMENSIONS" | cut -d'x' -f2)
+
+    # target resolution, replace x with : to make it work in -vf video filter options
+    RESOLUTION="${RESOLUTION/x/:}";
 
     if [[ $RESOLUTION != "original" ]]
     then
         # Detect orientation, swap widh and height if vertical video
         if [ "$width" -lt "$height" ]; then
-            targetwidth=$(echo "$RESOLUTION" | cut -d'x' -f1)
-            targetheight=$(echo "$RESOLUTION" | cut -d'x' -f2)
-            DIMENSIONS=$targetheight"x"$targetwidth
+            targetwidth=$(echo "$RESOLUTION" | cut -d':' -f1)
+            targetheight=$(echo "$RESOLUTION" | cut -d':' -f2)
+            DIMENSIONS=$targetheight":"$targetwidth
         else
             DIMENSIONS=$RESOLUTION
         fi
     else
-        DIMENSIONS=$width"x"$height
+        DIMENSIONS=$width":"$height
     fi
     
     # to keep original fps, we just omit -r argument, else we use it
@@ -170,12 +173,15 @@ do
         FPS_OPTIONS+=("-r" "$FPS")
     fi
 
-    # AV1 codec requires .mkv container
-    NEWFILENAME="$file".crf$CRF.$CODEC.compressed.mp4
+    # set extension, AV1 codec requires .mkv container
+    EXTENSION="mp4"
     if [[ $CODEC == "libaom-av1" ]]
     then
-        NEWFILENAME="$file".crf$CRF.$CODEC.compressed.mkv
+        EXTENSION="mkv"
     fi
+
+    RES="${RESOLUTION/:/x}"; # windows filename compatible resolution string with x separator 
+    NEWFILENAME="$file".crf$CRF.$FPS"fps".$RES.scale$SCALE.$CODEC.compressed.$EXTENSION
 
     # set audio options based on channel count
     AUDIO_OPTIONS=()
@@ -189,6 +195,8 @@ do
     VIDEO_FILTERS=()
     if [[ "$SCALE" != "1" ]]; then
         VIDEO_FILTERS+=("scale=trunc(iw*$SCALE/2)*2:trunc(ih*$SCALE/2)*2") # ensure number is divisible by 2
+    else
+        VIDEO_FILTERS+=("scale="$DIMENSIONS)
     fi
 
     # optional rotation filter
