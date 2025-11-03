@@ -116,13 +116,11 @@ echo "Starting download for channel $channel_url..."
 current_date=$(date +%Y-%m-%d)
 
 if [[ "$transcoding" == "yes" ]]; then
-  # Force container and codec, transcoding if needed
-  fmt_option="-f bv[height=${res}][ext=${ext}][vcodec^=${vcodec}]+ba/b[height=${res}][ext=${ext}][vcodec^=${vcodec}]"
+  fmt_option="-f bv[height=${res}][ext=${ext}][vcodec^=${vcodec}]+ba/b[height=${res}][ext=${ext}][vcodec^=${vcodec}]/bv[height<=360]+ba/b[height<=360]/bestvideo[height<=360]+bestaudio/best[height<=360]"
   merge_format="$ext"
 else
-  # Download what YouTube offers without transcoding
-  fmt_option=""
-  merge_format="" # no merge-output-format to avoid transcoding
+  fmt_option="-f 'bv*[height<=${res}]+ba/b*[height<=${res}]/bestvideo[height<=${res}]+bestaudio/best[height<=${res}]'"
+  merge_format=""
 fi
 
 yt-dlp $fmt_option \
