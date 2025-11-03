@@ -137,7 +137,7 @@ yt-dlp $fmt_option \
   --embed-subs \
   $cookie_option \
   --output-na-placeholder "$current_date-nodate-" \
-  -o "${safe_channel_name}/%(upload_date>%Y-%m-%d)s-%(title)s.%(ext)s" \
+  -o "${safe_channel_name}/%(upload_date>%Y-%m-%d)s-%(id)s-%(title)s.%(ext)s" \
   "$channel_url"
 
 echo "Download completed! Files saved in folder: $safe_channel_name"
