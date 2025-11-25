@@ -15,7 +15,7 @@ fi
 (
 IFS=$'\n'
 for file in $(find . -type f \( -iname "*.png" -o -iname "*.webp" -o -iname "*.jfif" \
-	                             -o -iname "*.cr2" \))
+	                             -o -iname "*.cr2" -o -iname "*.heic" \))
 do
 	echo "$file"
 	convert "$file" "$file".jpg \
