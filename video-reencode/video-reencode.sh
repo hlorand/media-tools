@@ -245,4 +245,5 @@ done
 echo -e "\nSize before: " $SIZEBEFORE
 echo "Size after: " $(du -sh | cut -d$'\t' -f1)
 echo "Press ENTER to exit"; read enter
+echo -e "\\a\\a\\a" # bell 
 )
