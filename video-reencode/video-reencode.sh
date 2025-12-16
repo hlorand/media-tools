@@ -78,6 +78,41 @@ then
     TUNE=""
 fi
 
+echo "Choose a color space (SDR for H.264, HDR for H.265; some players can use HDR with H.264 too):"
+echo "Use SDR (8‑bit), Rec.709 gamut, SDR curve: for everyday viewing."
+echo "Use HDR (10‑bit), Rec.2020 gamut, HLG (Hybrid Log‑Gamma) curve: if you watch on both SDR and HDR screens."
+echo "Use HDR (10‑bit), Rec.2020 gamut, PQ (ST 2084) curve: if you only watch on fully HDR‑compatible screens."
+echo "   (If HDR has extra Dolby Vision metadata, ffmpeg cannot keep it; it will be stripped.)"
+select COLORSPACE in "SDR_Rec709" "HDR_HLG_Rec2020" "HDR10_PQ_Rec2020"; do
+    break
+done
+
+COLORSPACE_OPTIONS=()
+case "$COLORSPACE" in
+  "SDR_Rec709")
+    COLORSPACE_OPTIONS+=(
+      "-color_primaries" "bt709"
+      "-color_trc" "bt709"
+      "-colorspace" "bt709"
+    )
+    ;;
+  "HDR_HLG_Rec2020")
+    COLORSPACE_OPTIONS+=(
+      "-color_primaries" "bt2020"
+      "-color_trc" "arib-std-b67"
+      "-colorspace" "bt2020nc"
+    )
+    ;;
+  "HDR10_PQ_Rec2020")
+    COLORSPACE_OPTIONS+=(
+      "-color_primaries" "bt2020"
+      "-color_trc" "smpte2084"
+      "-colorspace" "bt2020nc"
+    )
+    ;;
+esac
+
+
 echo -e "--------------\nAUDIO SETTINGS\n--------------"
 
 echo "Number of audio channels:"
@@ -181,7 +216,7 @@ do
     fi
 
     RES="${RESOLUTION/:/x}"; # windows filename compatible resolution string with x separator 
-    NEWFILENAME="$file".crf$CRF.$FPS"fps".$RES.scale$SCALE.$CODEC.compressed.$EXTENSION
+    NEWFILENAME="$file".crf$CRF.$FPS"fps".$RES.scale$SCALE.$CODEC.$COLORSPACE.compressed.$EXTENSION
 
     # set audio options based on channel count
     AUDIO_OPTIONS=()
@@ -234,6 +269,7 @@ do
             -preset "$PRESET" \
             "${VIDEO_FILTERS[@]}" \
             "${FPS_OPTIONS[@]}" \
+            "${COLORSPACE_OPTIONS[@]}" \
             -threads "$THREADS" \
             ${TUNE:+"-tune"} ${TUNE:+"$TUNE"} \
             -vcodec $CODEC \
