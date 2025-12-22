@@ -31,6 +31,11 @@ select RESOLUTION in "original" "426x240" "640x360" "854x480" "1280x720" "1920x1
     break
 done
 
+echo "Keep aspect ratio? (width forced, height auto"
+select ASPECT in "yes" "no"; do
+    break
+done
+
 echo "Do you want to scale the video? (1 = no)"
 echo "If you scale, original resolution used."
 select SCALE in "1" "0.75" "0.5" "0.25" "0.2" "0.1"; do
@@ -150,7 +155,7 @@ done
 
 ##########################################
 
-FILES=$(find ./ -not -path '*/.*' \( -name "*.mp4" -o -name "*.MP4" -o -name "*.m4v" -o -name "*.M4V" -o -name "*.mkv" -o -name "*.MKV" -o -name "*.mpg" -o -name "*.MPG" -o -name "*.mpeg" -o -name "*.MPEG" -o -name "*.avi" -o -name "*.AVI" -o -name "*.mov" -o -name "*.MOV" \) | sort -V)
+FILES=$(find ./ -not -path '*/.*' \( -name "*.mp4" -o -name "*.MP4" -o -name "*.m4v" -o -name "*.M4V" -o -name "*.mkv" -o -name "*.MKV" -o -name "*.mpg" -o -name "*.MPG" -o -name "*.mpeg" -o -name "*.MPEG" -o -name "*.avi" -o -name "*.AVI" -o -name "*.mov" -o -name "*.MOV" -o -name "*.ts" -o -name "*.TS" \) | sort -V)
 
 # progress variables
 NUMFILES=`echo "$FILES" | wc -l`
@@ -185,10 +190,9 @@ do
     height=$(echo "$DIMENSIONS" | cut -d'x' -f2)
 
     # target resolution, replace x with : to make it work in -vf video filter options
-    RESOLUTION="${RESOLUTION/x/:}";
+    RESOLUTION="${RESOLUTION/x/:}"
 
-    if [[ $RESOLUTION != "original" ]]
-    then
+    if [[ $RESOLUTION != "original" ]]; then
         # Detect orientation, swap widh and height if vertical video
         if [ "$width" -lt "$height" ]; then
             targetwidth=$(echo "$RESOLUTION" | cut -d':' -f1)
@@ -226,12 +230,19 @@ do
         AUDIO_OPTIONS+=("-acodec" "aac" "-ar" "44100" "-ac" "$ACHANNELS" "-b:a" "$ABITRATE")
     fi
 
+    # if keep aspect: fix width, auto height. -2 => auto height, but ensure value divisible by 2
+    if [[ "$ASPECT" == "yes" ]]; then
+        targetwidth=$(echo "$DIMENSIONS" | cut -d':' -f1)
+        DIMENSIONS="$targetwidth:-2"
+    fi
+
     # optional scale filter
     VIDEO_FILTERS=()
     if [[ "$SCALE" != "1" ]]; then
-        VIDEO_FILTERS+=("scale=trunc(iw*$SCALE/2)*2:trunc(ih*$SCALE/2)*2") # ensure number is divisible by 2
+        VIDEO_FILTERS+=("scale=trunc(iw*$SCALE/2)*2:trunc(ih*$SCALE/2)*2,setsar=1")
     else
-        VIDEO_FILTERS+=("scale="$DIMENSIONS)
+        # apply scale with DIMENSIONS and then square pixels
+        VIDEO_FILTERS+=("scale=$DIMENSIONS,setsar=1")
     fi
 
     # optional rotation filter
