@@ -133,6 +133,41 @@ then
     done
 fi
 
+echo "Trim video?"
+select TRIM in "no" "yes"; do
+  break
+done
+
+echo -e "--------------\nOPTIONAL TRIM\n--------------"
+
+TRIM_FROM=""
+TRIM_TO=""
+
+if [[ "$TRIM" == "yes" ]]; then
+  read -r -p "From timecode (HH:MM:SS): " TRIM_FROM
+  read -r -p "To timecode   (HH:MM:SS): " TRIM_TO
+
+  # Minimal format check (00-99 hours allowed)
+  if [[ ! "$TRIM_FROM" =~ ^[0-9]{2}:[0-9]{2}:[0-9]{2}$ ]] || [[ ! "$TRIM_TO" =~ ^[0-9]{2}:[0-9]{2}:[0-9]{2}$ ]]; then
+    echo "Invalid timecode format. Use HH:MM:SS (example: 00:01:23)."
+    exit 1
+  fi
+fi
+
+TRIM_OPTIONS=()
+if [[ "$TRIM" == "yes" ]]; then
+  # Put after -i for more accurate trimming when encoding
+  TRIM_OPTIONS+=( -ss "$TRIM_FROM" -to "$TRIM_TO" )
+fi
+
+TRIM_SUFFIX=""
+if [[ "$TRIM" == "yes" ]]; then
+  FROM_SAFE="${TRIM_FROM//:/-}"
+  TO_SAFE="${TRIM_TO//:/-}"
+  TRIM_SUFFIX=".from${FROM_SAFE}.to${TO_SAFE}"
+fi
+
+
 echo -e "--------------\nCONVERSION SETTINGS\n--------------"
 
 echo "Conversion speed (the faster the speed, the larger the file size)"
@@ -220,7 +255,7 @@ do
     fi
 
     RES="${RESOLUTION/:/x}"; # windows filename compatible resolution string with x separator 
-    NEWFILENAME="$file".crf$CRF.$FPS"fps".$RES.scale$SCALE.$CODEC.$COLORSPACE.compressed.$EXTENSION
+    NEWFILENAME="$file".crf$CRF.$FPS"fps".$RES.scale$SCALE.$CODEC.$COLORSPACE"$TRIM_SUFFIX".compressed.$EXTENSION
 
     # set audio options based on channel count
     AUDIO_OPTIONS=()
@@ -275,7 +310,10 @@ do
         "$@"
     }
 
-    echo_cmd ffmpeg -v error -stats -stats_period 1 -i "$file" -movflags +faststart \
+    echo_cmd ffmpeg -v error -stats -stats_period 1 \
+            -i "$file" \
+            "${TRIM_OPTIONS[@]}" \
+            -movflags +faststart \
             -crf "$CRF" \
             -preset "$PRESET" \
             "${VIDEO_FILTERS[@]}" \
