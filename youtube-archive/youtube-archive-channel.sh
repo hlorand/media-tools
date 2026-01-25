@@ -1,32 +1,53 @@
 #!/bin/bash
+set -euo pipefail
+
+# --- Auto-update yt-dlp (brew on macOS, apt on Debian/Ubuntu Linux) ---
+os="$(uname -s)"  # Darwin on macOS, Linux on Linux.
+
+if [[ "$os" == "Darwin" ]]; then
+  if command -v brew >/dev/null 2>&1; then
+    brew update
+    brew upgrade yt-dlp  # update yt-dlp via Homebrew. [web:86]
+  else
+    echo "Homebrew not found (brew). Skipping yt-dlp auto-update."
+  fi
+elif [[ "$os" == "Linux" ]]; then
+  if command -v apt-get >/dev/null 2>&1; then
+    sudo apt-get update
+    sudo apt-get install --only-upgrade -y yt-dlp
+  else
+    echo "apt-get not found. Skipping yt-dlp auto-update."
+  fi
+else
+  echo "Unsupported OS ($os). Skipping yt-dlp auto-update."
+fi
+# --- End auto-update block ---
 
 echo "Enter YouTube channel URL (e.g. https://www.youtube.com/@...):"
-read channel_url
+read -r channel_url
 
-# Extract channel name by splitting on '@' and remove whitespace
 channel_name="${channel_url##*@}"
 channel_name="$(echo "$channel_name" | tr -d '[:space:]' | tr -d '\r\n')"
-safe_channel_name=$(echo "$channel_name" | sed 's/[^a-zA-Z0-9_-]//g')
+safe_channel_name="$(echo "$channel_name" | sed 's/[^a-zA-Z0-9_-]//g')"
 
 echo "Channel name detected: $safe_channel_name"
-
 mkdir -p "$safe_channel_name"
 
-# Select browser for cookies
 echo "Select browser for cookies:"
 echo "1) Firefox"
 echo "2) Chrome"
 echo "3) None"
-read browser_choice
+read -r browser_choice
 
-case $browser_choice in
-  1) cookie_option="--cookies-from-browser firefox" ;;
-  2) cookie_option="--cookies-from-browser chrome" ;;
-  3) cookie_option="" ;;  # No cookies option
-  *) echo "Invalid choice, no cookies will be used."; cookie_option="" ;;
+cookie_option=()
+case "$browser_choice" in
+  1) cookie_option=(--cookies-from-browser firefox) ;;
+  2) cookie_option=(--cookies-from-browser chrome) ;;
+  3) cookie_option=() ;;
+  *) echo "Invalid choice, no cookies will be used."; cookie_option=() ;;
 esac
 
-echo "Select video resolution to download:"
+echo "Select video resolution to download (max height):"
 echo "1) 144p"
 echo "2) 240p"
 echo "3) 360p"
@@ -35,9 +56,9 @@ echo "5) 720p"
 echo "6) 1080p"
 echo "7) 1440p (2K)"
 echo "8) 2160p (4K)"
-read resolution_choice
+read -r resolution_choice
 
-case $resolution_choice in
+case "$resolution_choice" in
   1) res=144 ;;
   2) res=240 ;;
   3) res=360 ;;
@@ -49,93 +70,82 @@ case $resolution_choice in
   *) echo "Invalid choice, defaulting to 240p"; res=240 ;;
 esac
 
-echo "Select video format:"
-echo "1) mp4 (will transcode to selected codec)"
-echo "2) webm (will transcode to selected codec)"
-echo "3) mkv (will transcode to selected codec)"
-echo "4) I don't care (download exactly what YouTube offers, no transcoding)"
-read format_choice
+echo "Select output mode:"
+echo "1) Maximum compatibility: MP4 (H.264 + AAC) [re-encode]"
+echo "2) Smaller files: MP4 (H.265/HEVC + AAC) [re-encode]"
+echo "3) Quick archive: Keep YouTube formats (fast; may be webm/mp4)"
+read -r mode_choice
 
-if [[ "$format_choice" == "4" ]]; then
-  echo "Selected 'I don't care' - downloading without transcoding, keeping YouTube original formats."
-  transcoding="no"
-  ext=""
-else
-  transcoding="yes"
-  case $format_choice in
-    1) ext="mp4" ;;
-    2) ext="webm" ;;
-    3) ext="mkv" ;;
-    *) echo "Invalid choice, defaulting to mp4"; ext="mp4" ;;
-  esac
+echo "Rate limit (KB/s). Enter 0 for unlimited:"
+read -r rate_kbps
+
+echo "Min sleep seconds between downloads (e.g. 5). Enter 0 for no sleep:"
+read -r min_sleep
+
+echo "Max sleep seconds between downloads (randomized). Enter 0 to disable max sleep:"
+read -r max_sleep
+
+# Rate limit option: use -r/--limit-rate to actually cap bandwidth.
+rate_option=()
+if [[ "${rate_kbps:-0}" =~ ^[0-9]+$ ]] && [[ "$rate_kbps" -gt 0 ]]; then
+  rate_option=(-r "${rate_kbps}K")
 fi
 
-if [[ "$transcoding" == "yes" ]]; then
-  # Ask codec depending on container
-  case $ext in
-    mp4)
-      echo "Select codec for mp4:"
-      echo "1) h264 (recommended, most compatible)"
-      echo "2) h265 (better compression, less compatible)"
-      read codec_choice
-      case $codec_choice in
-        1) vcodec="avc1" ;;   # H264
-        2) vcodec="hev1" ;;   # H265 (HEVC)
-        *) echo "Invalid choice, defaulting to h264"; vcodec="avc1" ;;
-      esac
-      ;;
-    webm)
-      echo "Select codec for webm:"
-      echo "1) vp9 (default)"
-      echo "2) av1 (better compression, slow encoding)"
-      read codec_choice
-      case $codec_choice in
-        1) vcodec="vp9" ;;
-        2) vcodec="av01" ;;
-        *) echo "Invalid choice, defaulting to vp9"; vcodec="vp9" ;;
-      esac
-      ;;
-    mkv)
-      echo "Select codec for mkv:"
-      echo "1) h264"
-      echo "2) h265"
-      echo "3) vp9"
-      read codec_choice
-      case $codec_choice in
-        1) vcodec="avc1" ;;
-        2) vcodec="hev1" ;;
-        3) vcodec="vp9" ;;
-        *) echo "Invalid choice, defaulting to h264"; vcodec="avc1" ;;
-      esac
-      ;;
-  esac
+# Sleep options: --sleep-interval and --max-sleep-interval.
+sleep_options=()
+if [[ "${min_sleep:-0}" =~ ^[0-9]+(\.[0-9]+)?$ ]] && [[ "$(printf "%.0f" "$min_sleep")" -gt 0 ]]; then
+  sleep_options+=(--sleep-interval "$min_sleep")
+  if [[ "${max_sleep:-0}" =~ ^[0-9]+(\.[0-9]+)?$ ]] && [[ "$(printf "%.0f" "$max_sleep")" -gt 0 ]]; then
+    sleep_options+=(--max-sleep-interval "$max_sleep")
+  fi
 fi
 
-echo "Starting download for channel $channel_url..."
+# Force max resolution AND always have audio using bv*+ba/b fallback.
+fmt_option="bv*[height<=${res}]+ba/b[height<=${res}]/bv*+ba/b"
+
+# Post-processing options (kept as arrays to avoid quote issues).
+pp_opts=()
+case "$mode_choice" in
+  1)
+    # MP4/H.264/AAC for max compatibility (re-encode).
+    pp_opts+=(--recode-video mp4)
+    pp_opts+=(--postprocessor-args "VideoConvertor:-c:v libx264 -pix_fmt yuv420p -profile:v high -c:a aac -b:a 160k")
+    ;;
+  2)
+    # MP4/H.265/AAC for smaller files (re-encode).
+    pp_opts+=(--recode-video mp4)
+    pp_opts+=(--postprocessor-args "VideoConvertor:-c:v libx265 -pix_fmt yuv420p -tag:v hvc1 -c:a aac -b:a 128k")
+    ;;
+  3)
+    # Quick archive: no re-encode; merge into mkv when needed for mixed codecs.
+    pp_opts+=(--merge-output-format mkv)
+    ;;
+  *)
+    echo "Invalid choice, defaulting to 3 (quick archive)."
+    pp_opts+=(--merge-output-format mkv)
+    ;;
+esac
 
 current_date=$(date +%Y-%m-%d)
 
-if [[ "$transcoding" == "yes" ]]; then
-  fmt_option="-f bv[height=${res}][ext=${ext}][vcodec^=${vcodec}]+ba/b[height=${res}][ext=${ext}][vcodec^=${vcodec}]/bv[height<=360]+ba/b[height<=360]/bestvideo[height<=360]+bestaudio/best[height<=360]"
-  merge_format="$ext"
-else
-  fmt_option="-f 'bv*[height<=${res}]+ba/b*[height<=${res}]/bestvideo[height<=${res}]+bestaudio/best[height<=${res}]'"
-  merge_format=""
-fi
-
-yt-dlp $fmt_option \
-  $( [[ "$transcoding" == "yes" ]] && echo "--merge-output-format $merge_format" ) \
-  --download-archive "${safe_channel_name}/downloaded-${safe_channel_name}.txt" \
-  --concurrent-fragments 1 \
-  --throttled-rate 500K \
-  --sleep-interval 5 \
-  --max-sleep-interval 20 \
-  --restrict-filenames \
-  --add-metadata \
-  --embed-subs \
-  $cookie_option \
-  --output-na-placeholder "$current_date-nodate-" \
-  -o "${safe_channel_name}/%(upload_date>%Y-%m-%d)s-%(id)s-%(title)s.%(ext)s" \
+# Build yt-dlp command as an array to preserve argument boundaries (prevents "No closing quotation").
+cmd=(
+  yt-dlp
+  -f "$fmt_option"
+  "${pp_opts[@]}"
+  "${rate_option[@]}"
+  "${sleep_options[@]}"
+  --download-archive "${safe_channel_name}/downloaded-${safe_channel_name}.txt"
+  --concurrent-fragments 1
+  --restrict-filenames
+  --add-metadata
+  --embed-subs
+  "${cookie_option[@]}"
+  --output-na-placeholder "$current_date-nodate-"
+  -o "${safe_channel_name}/%(upload_date>%Y-%m-%d)s-%(id)s-%(title)s.%(ext)s"
   "$channel_url"
+)
+
+"${cmd[@]}"
 
 echo "Download completed! Files saved in folder: $safe_channel_name"
