@@ -131,6 +131,7 @@ current_date=$(date +%Y-%m-%d)
 # Build yt-dlp command as an array to preserve argument boundaries (prevents "No closing quotation").
 cmd=(
   yt-dlp
+  --abort-on-error
   -f "$fmt_option"
   "${pp_opts[@]}"
   "${rate_option[@]}"
